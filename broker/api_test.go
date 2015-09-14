@@ -13,9 +13,9 @@ var _ = Describe("Service broker", func() {
 
 	BeforeEach(func() {
 		broker.Catalog = []brokerapi.Service{
-			brokerapi.Service{
+			{
 				Plans: []brokerapi.ServicePlan{
-					brokerapi.ServicePlan{ID: "plan-uuid"},
+					{ID: "plan-uuid"},
 				},
 			},
 		}
@@ -26,6 +26,16 @@ var _ = Describe("Service broker", func() {
 			It("creates an instance", func() {
 				err := broker.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
 				Ω(err).ToNot(HaveOccurred())
+
+				// Expect(len(someCreatorAndBinder.createdInstanceIds)).To(Equal(1))
+				// Expect(someCreatorAndBinder.createdInstanceIds[0]).To(Equal(instanceID))
+			})
+		})
+
+		Context("when the plan is not recognized", func() {
+			It("creates an instance", func() {
+				err := broker.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"})
+				Ω(err).To(HaveOccurred())
 
 				// Expect(len(someCreatorAndBinder.createdInstanceIds)).To(Equal(1))
 				// Expect(someCreatorAndBinder.createdInstanceIds[0]).To(Equal(instanceID))
