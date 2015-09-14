@@ -13,28 +13,38 @@ import (
 
 // Broker is the core struct for the Broker webapp
 type Broker struct {
-	Catalog []brokerapi.Service
+	Catalog        []brokerapi.Service
+	BackendBrokers []*BackendBroker
+
+	Logger lager.Logger
+}
+
+// BackendBroker describes the location/creds for a backend broker providing actual services
+type BackendBroker struct {
+	URI      string
+	Username string
+	Password string
 }
 
 // NewBroker is a constructor for a Broker webapp struct
-func NewBroker() (broker *Broker) {
+func NewBroker() (subway *Broker) {
 	return &Broker{}
 }
 
 // LoadCatalog loads the homogenous catalog from a file
-func (broker *Broker) LoadCatalog(catalogPath string) error {
+func (subway *Broker) LoadCatalog(catalogPath string) error {
 	bytes, err := ioutil.ReadFile(catalogPath)
 	if err != nil {
 		return err
 	}
 
-	broker.Catalog = []brokerapi.Service{}
-	return yaml.Unmarshal(bytes, &broker.Catalog)
+	subway.Catalog = []brokerapi.Service{}
+	return yaml.Unmarshal(bytes, &subway.Catalog)
 }
 
-func (broker *Broker) plans() []*brokerapi.ServicePlan {
+func (subway *Broker) plans() []*brokerapi.ServicePlan {
 	plans := []*brokerapi.ServicePlan{}
-	for _, service := range broker.Catalog {
+	for _, service := range subway.Catalog {
 		for _, plan := range service.Plans {
 			plans = append(plans, &plan)
 		}
@@ -43,18 +53,18 @@ func (broker *Broker) plans() []*brokerapi.ServicePlan {
 }
 
 // Run starts the Martini webapp handler
-func (broker *Broker) Run() {
-	logger := lager.NewLogger("cf-subway")
-	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
-	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
+func (subway *Broker) Run() {
+	subway.Logger = lager.NewLogger("cf-subway")
+	subway.Logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	subway.Logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 
 	credentials := brokerapi.BrokerCredentials{
 		Username: "username",
 		Password: "password",
 	}
 
-	brokerAPI := brokerapi.New(broker, logger, credentials)
+	brokerAPI := brokerapi.New(subway, subway.Logger, credentials)
 	http.Handle("/", brokerAPI)
 	port := 3000
-	logger.Fatal("http-listen", http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil))
+	subway.Logger.Fatal("http-listen", http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil))
 }

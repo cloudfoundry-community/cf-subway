@@ -13,25 +13,23 @@ func (broker *Broker) Services() []brokerapi.Service {
 
 // Provision requests the creation of a service instance from an available sub-broker
 func (broker *Broker) Provision(instanceID string, details brokerapi.ProvisionDetails) error {
-	// return brokerapi.ErrInstanceAlreadyExists
-
 	if details.PlanID == "" {
 		return errors.New("plan_id required")
 	}
 
-	planIDFound := ""
+	planID := ""
 	for _, plan := range broker.plans() {
 		if plan.ID == details.PlanID {
-			planIDFound = details.PlanID
+			planID = details.PlanID
 			break
 		}
 	}
 
-	if planIDFound == "" {
+	if planID == "" {
 		return errors.New("plan_id not recognized")
 	}
-	// return brokerapi.ErrInstanceLimitMet
-	return nil
+
+	return broker.routeProvision(instanceID, planID)
 }
 
 // Deprovision requests the destruction of a service instance from associated sub-broker

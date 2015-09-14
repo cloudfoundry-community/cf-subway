@@ -9,36 +9,42 @@ import (
 )
 
 var _ = Describe("Service broker", func() {
-	var broker broker.Broker
+	var subway broker.Broker
 
 	BeforeEach(func() {
-		broker.Catalog = []brokerapi.Service{
+		subway.Catalog = []brokerapi.Service{
 			{
 				Plans: []brokerapi.ServicePlan{
 					{ID: "plan-uuid"},
 				},
 			},
 		}
+		subway.BackendBrokers = []*broker.BackendBroker{
+			{URI: "TESTDUMMY"},
+		}
 	})
 
 	Describe(".Provision", func() {
 		Context("when the plan is recognized", func() {
 			It("creates an instance", func() {
-				err := broker.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
 				Ω(err).ToNot(HaveOccurred())
+			})
+		})
 
-				// Expect(len(someCreatorAndBinder.createdInstanceIds)).To(Equal(1))
-				// Expect(someCreatorAndBinder.createdInstanceIds[0]).To(Equal(instanceID))
+		Context("when the plan is recognized but no backend brokers", func() {
+			It("creates an instance", func() {
+				subway.BackendBrokers = nil
+				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				Ω(err).To(HaveOccurred())
+				Ω(err.Error()).To(Equal("No backend broker available for plan"))
 			})
 		})
 
 		Context("when the plan is not recognized", func() {
 			It("creates an instance", func() {
-				err := broker.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"})
+				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"})
 				Ω(err).To(HaveOccurred())
-
-				// Expect(len(someCreatorAndBinder.createdInstanceIds)).To(Equal(1))
-				// Expect(someCreatorAndBinder.createdInstanceIds[0]).To(Equal(instanceID))
 			})
 		})
 	})
