@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/cloudfoundry-community/cf-subway/broker"
@@ -8,7 +9,13 @@ import (
 )
 
 func runBroker(c *cli.Context) {
+	catalogPath := c.String("catalog")
+
 	broker := broker.NewBroker()
+	err := broker.LoadCatalog(catalogPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	broker.Run()
 }
 
@@ -23,9 +30,9 @@ func main() {
 			Usage: "run the broker",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:  "config, c",
-					Value: "broker_config.yml",
-					Usage: "configuration",
+					Name:  "catalog",
+					Value: "service-catalog.yml",
+					Usage: "service catalog supported by all backend sub-brokers",
 				},
 			},
 			Action: runBroker,

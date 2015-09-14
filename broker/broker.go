@@ -1,24 +1,43 @@
 package broker
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal-golang/lager"
+	"gopkg.in/yaml.v2"
 )
 
 // Broker is the core struct for the Broker webapp
 type Broker struct {
+	Catalog []brokerapi.Service
 }
 
 // NewBroker is a constructor for a Broker webapp struct
-func NewBroker() *Broker {
+func NewBroker() (broker *Broker) {
 	return &Broker{}
+}
+
+// LoadCatalog loads the homogenous catalog from a file
+func (broker *Broker) LoadCatalog(catalogPath string) error {
+	bytes, err := ioutil.ReadFile(catalogPath)
+	if err != nil {
+		return err
+	}
+
+	broker.Catalog = []brokerapi.Service{}
+	return yaml.Unmarshal(bytes, &broker.Catalog)
 }
 
 // Run starts the Martini webapp handler
 func (broker *Broker) Run() {
-	logger := lager.NewLogger("my-service-broker")
+	logger := lager.NewLogger("cf-subway")
+	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
+
 	credentials := brokerapi.BrokerCredentials{
 		Username: "username",
 		Password: "password",
@@ -26,5 +45,6 @@ func (broker *Broker) Run() {
 
 	brokerAPI := brokerapi.New(broker, logger, credentials)
 	http.Handle("/", brokerAPI)
-	http.ListenAndServe(":3000", nil)
+	port := 3000
+	logger.Fatal("http-listen", http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil))
 }

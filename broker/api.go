@@ -4,7 +4,7 @@ import "github.com/pivotal-cf/brokerapi"
 
 // Services is used by Cloud Foundry to learn the available catalog of services
 func (broker *Broker) Services() []brokerapi.Service {
-	return []brokerapi.Service{}
+	return broker.Catalog
 }
 
 // Provision requests the creation of a service instance from an available sub-broker
