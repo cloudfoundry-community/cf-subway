@@ -14,14 +14,10 @@ var _ = Describe("Service broker", func() {
 	BeforeEach(func() {
 		subway.Catalog = []brokerapi.Service{
 			{
-				Plans: []brokerapi.ServicePlan{
-					{ID: "plan-uuid"},
-				},
+				Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
 			},
 		}
-		subway.BackendBrokers = []*broker.BackendBroker{
-			{URI: "TESTDUMMY"},
-		}
+		subway.BackendBrokers = []*broker.BackendBroker{{URI: "TESTDUMMY"}}
 	})
 
 	Describe(".Provision", func() {
