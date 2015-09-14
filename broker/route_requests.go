@@ -4,6 +4,9 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
+
+	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-golang/lager"
 )
 
 func (subway *Broker) randomBroker() *BackendBroker {
@@ -15,13 +18,34 @@ func (subway *Broker) randomBroker() *BackendBroker {
 }
 
 func (subway *Broker) routeProvision(instanceID string, planID string) (err error) {
-	backendBroker := subway.randomBroker()
-	if backendBroker == nil {
+	if len(subway.BackendBrokers) == 0 {
 		return errors.New("No backend broker available for plan")
 	}
 
-	if backendBroker.URI == "TESTDUMMY" {
+	list := rand.Perm(len(subway.BackendBrokers))
+	for i := range list {
+		backendBroker := subway.BackendBrokers[i]
+		err := subway.routeProvisionToBackendBroker(backendBroker, instanceID, planID)
+		if err == nil {
+			return nil
+		}
+	}
+	return brokerapi.ErrInstanceLimitMet
+}
+
+func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker, instanceID string, planID string) (err error) {
+	subway.Logger.Info("provision", lager.Data{
+		"instance-id": instanceID,
+		"plan-id":     planID,
+		"backend-uri": backendBroker.URI,
+	})
+
+	// Dummy URI to generate test results
+	if backendBroker.URI == "TEST-SUCCESS" {
 		return nil
+	}
+	if backendBroker.URI == "TEST-NO-CAPACITY" {
+		return brokerapi.ErrInstanceLimitMet
 	}
 
 	client := &http.Client{}

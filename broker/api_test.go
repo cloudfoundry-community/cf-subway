@@ -17,14 +17,36 @@ var _ = Describe("Service broker", func() {
 				Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
 			},
 		}
-		subway.BackendBrokers = []*broker.BackendBroker{{URI: "TESTDUMMY"}}
+		subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
 	})
 
 	Describe(".Provision", func() {
 		Context("when the plan is recognized", func() {
-			It("creates an instance", func() {
+			It("creates an instance if first backend ok", func() {
+				subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
 				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
 				Ω(err).ToNot(HaveOccurred())
+			})
+
+			It("creates an instance if one backend ok", func() {
+				subway.BackendBrokers = []*broker.BackendBroker{
+					{URI: "TEST-NO-CAPACITY"},
+					{URI: "TEST-NO-CAPACITY"},
+					{URI: "TEST-NO-CAPACITY"},
+					{URI: "TEST-SUCCESS"},
+					{URI: "TEST-NO-CAPACITY"},
+				}
+				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				Ω(err).ToNot(HaveOccurred())
+			})
+
+			It("fails to create an instance if no backend ok", func() {
+				subway.BackendBrokers = []*broker.BackendBroker{
+					{URI: "TEST-NO-CAPACITY"},
+					{URI: "TEST-NO-CAPACITY"},
+				}
+				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				Ω(err).To(HaveOccurred())
 			})
 		})
 
