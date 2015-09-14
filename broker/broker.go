@@ -1,8 +1,10 @@
 package broker
 
 import (
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
+	"net/http"
+
+	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-golang/lager"
 )
 
 // Broker is the core struct for the Broker webapp
@@ -16,9 +18,13 @@ func NewBroker() *Broker {
 
 // Run starts the Martini webapp handler
 func (broker *Broker) Run() {
-	m := martini.Classic()
-	m.Use(render.Renderer())
-	// m.Use(auth.Basic(webserverConfig.Auth.Username, webserverConfig.Auth.Password))
-	// m.Get("/", brokerShowHelp)
-	m.Run()
+	logger := lager.NewLogger("my-service-broker")
+	credentials := brokerapi.BrokerCredentials{
+		Username: "username",
+		Password: "password",
+	}
+
+	brokerAPI := brokerapi.New(broker, logger, credentials)
+	http.Handle("/", brokerAPI)
+	http.ListenAndServe(":3000", nil)
 }
