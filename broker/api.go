@@ -1,6 +1,10 @@
 package broker
 
-import "github.com/pivotal-cf/brokerapi"
+import (
+	"errors"
+
+	"github.com/pivotal-cf/brokerapi"
+)
 
 // Services is used by Cloud Foundry to learn the available catalog of services
 func (broker *Broker) Services() []brokerapi.Service {
@@ -9,7 +13,23 @@ func (broker *Broker) Services() []brokerapi.Service {
 
 // Provision requests the creation of a service instance from an available sub-broker
 func (broker *Broker) Provision(instanceID string, details brokerapi.ProvisionDetails) error {
-	// Provision a new instance here
+	if details.PlanID == "" {
+		return errors.New("plan_id required")
+	}
+
+	planIDFound := ""
+	for _, plan := range broker.plans() {
+		if plan.ID == details.PlanID {
+			planIDFound = details.PlanID
+			break
+		}
+	}
+
+	if planIDFound == "" {
+		return errors.New("plan_id not recognized")
+	}
+	// return brokerapi.ErrInstanceAlreadyExists
+	// return brokerapi.ErrInstanceLimitMet
 	return nil
 }
 
@@ -19,7 +39,7 @@ func (broker *Broker) Deprovision(instanceID string) error {
 	return nil
 }
 
-// Provision requests the creation of a service instance bindings from associated sub-broker
+// Bind requests the creation of a service instance bindings from associated sub-broker
 func (broker *Broker) Bind(instanceID, bindingID string, details brokerapi.BindDetails) (interface{}, error) {
 	// Bind to instances here
 	// Return credentials which will be marshalled to JSON
@@ -27,7 +47,7 @@ func (broker *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 	return credentialsMap, nil
 }
 
-// Provision requests the destructions of a service instance binding from associated sub-broker
+// Unbind requests the destructions of a service instance binding from associated sub-broker
 func (broker *Broker) Unbind(instanceID, bindingID string) error {
 	// Unbind from instances here
 	return nil

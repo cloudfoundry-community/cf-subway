@@ -32,6 +32,16 @@ func (broker *Broker) LoadCatalog(catalogPath string) error {
 	return yaml.Unmarshal(bytes, &broker.Catalog)
 }
 
+func (broker *Broker) plans() []*brokerapi.ServicePlan {
+	plans := []*brokerapi.ServicePlan{}
+	for _, service := range broker.Catalog {
+		for _, plan := range service.Plans {
+			plans = append(plans, &plan)
+		}
+	}
+	return plans
+}
+
 // Run starts the Martini webapp handler
 func (broker *Broker) Run() {
 	logger := lager.NewLogger("cf-subway")
