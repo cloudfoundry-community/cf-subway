@@ -13,6 +13,8 @@ func (broker *Broker) Services() []brokerapi.Service {
 
 // Provision requests the creation of a service instance from an available sub-broker
 func (broker *Broker) Provision(instanceID string, details brokerapi.ProvisionDetails) error {
+	// return brokerapi.ErrInstanceAlreadyExists
+
 	if details.PlanID == "" {
 		return errors.New("plan_id required")
 	}
@@ -28,7 +30,6 @@ func (broker *Broker) Provision(instanceID string, details brokerapi.ProvisionDe
 	if planIDFound == "" {
 		return errors.New("plan_id not recognized")
 	}
-	// return brokerapi.ErrInstanceAlreadyExists
 	// return brokerapi.ErrInstanceLimitMet
 	return nil
 }
