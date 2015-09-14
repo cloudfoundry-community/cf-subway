@@ -57,7 +57,5 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
 	_, err = client.Do(req)
 
-	// forward response from backend broker to CF
-	// TODO: if error, then keep looking for another broker until tried all backend brokers
 	return err
 }
