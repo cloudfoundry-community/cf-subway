@@ -26,6 +26,8 @@ fi
 
 bosh -n delete deployment ${BOSH_DEPLOYMENT_NAME}
 
+set -e
+
 cd /tmp
 git clone https://github.com/cloudfoundry-community/postgresql-docker-boshrelease.git postgresql-docker
 cd postgresql-docker
