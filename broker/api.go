@@ -82,6 +82,12 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 
 				err = yaml.Unmarshal(jsonData, &bindingResponse)
 				if err == nil {
+					subway.Logger.Info("bind-success", lager.Data{
+						"instance-id": instanceID,
+						"binding-id":  bindingID,
+						"plan-id":     details.PlanID,
+						"backend-uri": backendBroker.URI,
+					})
 					return bindingResponse, nil
 				}
 			}
