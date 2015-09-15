@@ -45,3 +45,13 @@ YAML
 
 ./templates/make_manifest warden broker embedded tmp/scaling.yml
 bosh -n deploy
+
+backend_ips=$(bosh vms ${BOSH_DEPLOYMENT_NAME} | grep running | awk  '{print $8}')
+cd -
+
+counter=1
+for ip in $backend_ips; do
+  echo "export BACKEND_BROKER_${counter}=http://containers:containers@${ip}" >> backends.env
+  echo "http://containers:containers@${ip}" >> backends
+  counter=$((counter + 1))
+done
