@@ -8,18 +8,24 @@
 			"Rev": "c606efc92b966e5f627f2785d28e7e92787e08d0"
 		},
 		{
-			"ImportPath": "github.com/codegangsta/inject",
-			"Comment": "v1.0-rc1",
-			"Rev": "37d7f8432a3e684eef9b2edece76bdfa6ac85b39"
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
 		},
 		{
-			"ImportPath": "github.com/go-martini/martini",
-			"Comment": "v1.0",
-			"Rev": "49411a5b646861ad29a6ddd5351717a0a9c49b94"
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
 		},
 		{
-			"ImportPath": "github.com/martini-contrib/render",
-			"Rev": "870b5a6054ac0e6f2731a27f6156b93c8dd45e4b"
+			"ImportPath": "github.com/pivotal-cf/brokerapi",
+			"Rev": "9f368e578ab699e755c31980dc86d9fcd6848919"
+		},
+		{
+			"ImportPath": "github.com/pivotal-golang/lager",
+			"Rev": "57f34e3d061b11096c1f9f234075eb5d0ba77739"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "d466437aa4adc35830964cffc5b5f262c63ddcb4"
 		}
 	]
 }
