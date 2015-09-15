@@ -62,9 +62,34 @@ var _ = Describe("Service broker", func() {
 
 		Context("when the plan is not recognized", func() {
 			It("creates an instance", func() {
-				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"})
+				err := subway.Provision("service-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"})
 				Ω(err).To(HaveOccurred())
 			})
 		})
+	})
+
+	Describe(".Bind", func() {
+		It("one broker recognizes servicesinstance", func() {
+			subway.BackendBrokers = []*broker.BackendBroker{
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+				{URI: "TEST-FOUND-INSTANCE"},
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+			}
+			creds, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
+			Ω(err).ToNot(HaveOccurred())
+			Ω(creds).ToNot(BeNil())
+			credentials := creds.(brokerapi.BindingResponse).Credentials.(map[string]interface{})
+			Ω(credentials["host"]).To(Equal("10.10.10.10"))
+		})
+
+		It("no broker recognizes service instance", func() {
+			subway.BackendBrokers = []*broker.BackendBroker{
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+			}
+			_, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
+			Ω(err).To(HaveOccurred())
+		})
+
 	})
 })
