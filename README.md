@@ -1,6 +1,8 @@
 Subway for Cloud Foundry Service Brokers
 ========================================
 
+-	CI pipeline https://ci.starkandwayne.com/pipelines/subway
+
 Development
 -----------
 
@@ -22,4 +24,15 @@ To run tests within Concourse:
 
 ```
 fly e
+```
+
+CI
+--
+
+The CI pipeline is publicly visible at https://ci.starkandwayne.com/pipelines/subway
+
+To update CI pipeline in Concourse:
+
+```
+fly -t snw c -c pipeline.yml subway
 ```

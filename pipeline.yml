@@ -1,0 +1,15 @@
+jobs:
+- name: subway
+  public: true
+  plan:
+  - get: cf-subway
+    trigger: true
+  - task: run-tests
+    file: cf-subway/build.yml
+
+resources:
+- name: cf-subway
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry-community/cf-subway.git
+    branch: master
