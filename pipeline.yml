@@ -20,7 +20,6 @@ jobs:
   public: true
   plan:
   - get: cf-subway
-    trigger: true
   - task: deploy-test-backend
     file: cf-subway/scripts/deploy-test-backend.yml
     config:
