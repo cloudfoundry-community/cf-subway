@@ -69,7 +69,7 @@ var _ = Describe("Service broker", func() {
 	})
 
 	Describe(".Bind", func() {
-		It("one broker recognizes servicesinstance", func() {
+		It("one broker recognizes service instance", func() {
 			subway.BackendBrokers = []*broker.BackendBroker{
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-FOUND-INSTANCE"},
@@ -88,6 +88,28 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
 			_, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
+			Ω(err).To(HaveOccurred())
+		})
+
+	})
+
+	Describe(".Unind", func() {
+		It("one broker recognizes service instance", func() {
+			subway.BackendBrokers = []*broker.BackendBroker{
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+				{URI: "TEST-FOUND-INSTANCE"},
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+			}
+			err := subway.Unbind("service-id", "bind-id")
+			Ω(err).ToNot(HaveOccurred())
+		})
+
+		It("no broker recognizes service instance", func() {
+			subway.BackendBrokers = []*broker.BackendBroker{
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+			}
+			err := subway.Unbind("service-id", "bind-id")
 			Ω(err).To(HaveOccurred())
 		})
 

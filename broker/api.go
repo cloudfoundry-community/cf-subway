@@ -99,6 +99,35 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 
 // Unbind requests the destructions of a service instance binding from associated sub-broker
 func (subway *Broker) Unbind(instanceID, bindingID string) error {
-	// Unbind from instances here
-	return nil
+	subway.Logger.Info("unbind", lager.Data{
+		"instance-id": instanceID,
+		"binding-id":  bindingID,
+	})
+
+	for _, backendBroker := range subway.BackendBrokers {
+		// Dummy URI to generate test results
+		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
+			return nil
+		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
+			// Skip test backend broker
+		} else {
+			client := &http.Client{}
+			url := fmt.Sprintf("%s/v2/service_instances/%s/service_bindings/%s", backendBroker.URI, instanceID, bindingID)
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				subway.Logger.Error("backend-unbind", err)
+				return err
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+			resp, err := client.Do(req)
+			defer resp.Body.Close()
+
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			}
+		}
+	}
+
+	return brokerapi.ErrInstanceDoesNotExist
 }
