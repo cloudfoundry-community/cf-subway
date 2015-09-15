@@ -24,8 +24,6 @@ if [[ "$(bosh releases | grep ' postgresql-docker ')X" == "X" ]]; then
   bosh upload release https://bosh.io/d/github.com/cloudfoundry-community/postgresql-docker-boshrelease
 fi
 
-bosh -n delete deployment ${BOSH_DEPLOYMENT_NAME}
-
 set -e
 
 cd /tmp
@@ -45,8 +43,11 @@ jobs:
 YAML
 
 
-./templates/make_manifest warden broker embedded tmp/scaling.yml
+./templates/make_manifest garden broker embedded tmp/scaling.yml
+
+set +e
 bosh -n deploy
+set -e
 
 backend_ips=$(bosh vms ${BOSH_DEPLOYMENT_NAME} | grep running | awk  '{print $8}')
 cd -
