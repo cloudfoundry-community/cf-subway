@@ -75,8 +75,12 @@ func (subway *Broker) Run() {
 		Password: "password",
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
 	brokerAPI := brokerapi.New(subway, subway.Logger, credentials)
 	http.Handle("/", brokerAPI)
-	port := 3000
-	subway.Logger.Fatal("http-listen", http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil))
+	subway.Logger.Fatal("http-listen", http.ListenAndServe(fmt.Sprintf("0.0.0.0:%s", port), nil))
 }
