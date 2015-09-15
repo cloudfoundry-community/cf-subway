@@ -5,6 +5,8 @@ if [[ "${BOSH_TARGET}X" == "X" ]]; then
   exit 1
 fi
 
+BOSH_DEPLOYMENT_NAME=${BOSH_DEPLOYMENT_NAME:-subway-postgresql-docker}
+
 cat > $HOME/.bosh_config << YAML
 ---
 auth:
@@ -22,6 +24,8 @@ if [[ "$(bosh releases | grep ' postgresql-docker ')X" == "X" ]]; then
   bosh upload release https://bosh.io/d/github.com/cloudfoundry-community/postgresql-docker-boshrelease
 fi
 
+bosh -n delete deployment ${BOSH_DEPLOYMENT_NAME}
+
 cd /tmp
 git clone https://github.com/cloudfoundry-community/postgresql-docker-boshrelease.git postgresql-docker
 cd postgresql-docker
@@ -29,6 +33,7 @@ cd postgresql-docker
 mkdir -p tmp
 cat > tmp/scaling.yml << YAML
 ---
+name: ${BOSH_DEPLOYMENT_NAME}
 update:
   canaries: 0
 
