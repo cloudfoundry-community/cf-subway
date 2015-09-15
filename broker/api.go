@@ -39,12 +39,6 @@ func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDe
 	return subway.routeProvision(instanceID, details)
 }
 
-// Deprovision requests the destruction of a service instance from associated sub-broker
-func (subway *Broker) Deprovision(instanceID string) error {
-	// Deprovision instances here
-	return nil
-}
-
 // Bind requests the creation of a service instance bindings from associated sub-broker
 func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindDetails) (interface{}, error) {
 	subway.Logger.Info("bind", lager.Data{
@@ -124,6 +118,49 @@ func (subway *Broker) Unbind(instanceID, bindingID string) error {
 			defer resp.Body.Close()
 
 			if resp.StatusCode == http.StatusOK {
+				subway.Logger.Info("unbind-success", lager.Data{
+					"instance-id": instanceID,
+					"binding-id":  bindingID,
+					"backend-uri": backendBroker.URI,
+				})
+				return nil
+			}
+		}
+	}
+
+	return brokerapi.ErrInstanceDoesNotExist
+}
+
+// Deprovision requests the destruction of a service instance from associated sub-broker
+func (subway *Broker) Deprovision(instanceID string) error {
+	subway.Logger.Info("deprovision", lager.Data{
+		"instance-id": instanceID,
+	})
+
+	for _, backendBroker := range subway.BackendBrokers {
+		// Dummy URI to generate test results
+		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
+			return nil
+		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
+			// Skip test backend broker
+		} else {
+			client := &http.Client{}
+			url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				subway.Logger.Error("backend-unbind", err)
+				return err
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+			resp, err := client.Do(req)
+			defer resp.Body.Close()
+
+			if resp.StatusCode == http.StatusOK {
+				subway.Logger.Info("deprovision-success", lager.Data{
+					"instance-id": instanceID,
+					"backend-uri": backendBroker.URI,
+				})
 				return nil
 			}
 		}

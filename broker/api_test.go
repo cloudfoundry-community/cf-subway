@@ -114,4 +114,26 @@ var _ = Describe("Service broker", func() {
 		})
 
 	})
+
+	Describe(".Deprovision", func() {
+		It("one broker recognizes service instance", func() {
+			subway.BackendBrokers = []*broker.BackendBroker{
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+				{URI: "TEST-FOUND-INSTANCE"},
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+			}
+			err := subway.Deprovision("service-id")
+			Ω(err).ToNot(HaveOccurred())
+		})
+
+		It("no broker recognizes service instance", func() {
+			subway.BackendBrokers = []*broker.BackendBroker{
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+				{URI: "TEST-UNKNOWN-INSTANCE"},
+			}
+			err := subway.Deprovision("service-id")
+			Ω(err).To(HaveOccurred())
+		})
+
+	})
 })
