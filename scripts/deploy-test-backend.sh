@@ -18,7 +18,7 @@ YAML
 bosh target $BOSH_TARGET
 
 if [[ "$(bosh releases | grep ' docker ')X" == "X" ]]; then
-  bosh upload release https://bosh.io/d/github.com/cloudfoundry-community/docker-boshrelease
+  bosh upload release https://bosh.io/d/github.com/cf-platform-eng/docker-boshrelease
 fi
 if [[ "$(bosh releases | grep ' postgresql-docker ')X" == "X" ]]; then
   bosh upload release https://bosh.io/d/github.com/cloudfoundry-community/postgresql-docker-boshrelease
