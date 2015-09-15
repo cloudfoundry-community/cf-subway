@@ -1,0 +1,14 @@
+platform: linux
+
+image: docker:///concourse/concourse-ci
+
+inputs:
+- name: cf-subway
+
+params:
+  BOSH_TARGET:
+  BOSH_USERNAME: admin
+  BOSH_PASSWORD: admin
+
+run:
+  path: cf-subway/scripts/deploy-test-backend.sh
