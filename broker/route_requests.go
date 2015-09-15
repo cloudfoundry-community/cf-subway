@@ -9,14 +9,6 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-func (subway *Broker) randomBroker() *BackendBroker {
-	if len(subway.BackendBrokers) == 0 {
-		return nil
-	}
-	rand.Seed(4200)
-	return subway.BackendBrokers[rand.Intn(len(subway.BackendBrokers))]
-}
-
 func (subway *Broker) routeProvision(instanceID string, planID string) (err error) {
 	if len(subway.BackendBrokers) == 0 {
 		return errors.New("No backend broker available for plan")

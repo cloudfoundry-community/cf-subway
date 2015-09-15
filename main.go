@@ -11,12 +11,13 @@ import (
 func runBroker(c *cli.Context) {
 	catalogPath := c.String("catalog")
 
-	broker := broker.NewBroker()
-	err := broker.LoadCatalog(catalogPath)
+	subway := broker.NewBroker()
+	err := subway.LoadCatalog(catalogPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	broker.Run()
+	subway.LoadBackendBrokersFromEnv()
+	subway.Run()
 }
 
 func main() {

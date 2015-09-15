@@ -19,16 +19,13 @@ type Broker struct {
 	Logger lager.Logger
 }
 
-// BackendBroker describes the location/creds for a backend broker providing actual services
-type BackendBroker struct {
-	URI      string
-	Username string
-	Password string
-}
-
 // NewBroker is a constructor for a Broker webapp struct
 func NewBroker() (subway *Broker) {
-	return &Broker{}
+	subway = &Broker{}
+	subway.Logger = lager.NewLogger("cf-subway")
+	subway.Logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	subway.Logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
+	return subway
 }
 
 // LoadCatalog loads the homogenous catalog from a file
@@ -54,10 +51,6 @@ func (subway *Broker) plans() []*brokerapi.ServicePlan {
 
 // Run starts the Martini webapp handler
 func (subway *Broker) Run() {
-	subway.Logger = lager.NewLogger("cf-subway")
-	subway.Logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
-	subway.Logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
-
 	credentials := brokerapi.BrokerCredentials{
 		Username: "username",
 		Password: "password",
