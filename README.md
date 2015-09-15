@@ -1,5 +1,9 @@
-Subway for Cloud Foundry Service Brokers
-========================================
+Subway
+======
+
+A subway to scale out Cloud Foundry Service Brokers.
+
+Subway is a multiplexing service broker that allows you to scale out single node brokers, such as cf-containers-broker/docker-boshrelease and cf-redis-broker/cf-redis-release.
 
 -	CI pipeline https://ci.starkandwayne.com/pipelines/subway
 
