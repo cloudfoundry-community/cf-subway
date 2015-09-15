@@ -1,0 +1,10 @@
+platform: linux
+
+image: docker:///concourse/static-golang
+
+inputs:
+- name: cf-subway
+  path: gopath/src/github.com/cloudfoundry-community/cf-subway
+
+run:
+  path: gopath/src/github.com/cloudfoundry-community/cf-subway/scripts/test.sh
