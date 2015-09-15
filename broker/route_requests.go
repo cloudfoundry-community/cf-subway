@@ -2,6 +2,7 @@ package broker
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 
@@ -41,7 +42,8 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("PUT", backendBroker.URI, nil)
+	url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
+	req, err := http.NewRequest("PUT", url, nil)
 	if err != nil {
 		subway.Logger.Error("provision", err)
 		return err
