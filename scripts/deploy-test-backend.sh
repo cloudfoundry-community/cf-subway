@@ -5,13 +5,13 @@ if [[ "${BOSH_TARGET}X" == "X" ]]; then
   exit 1
 fi
 
-cat > $HOME/.bosh_config << EOS
+cat > $HOME/.bosh_config << YAML
 ---
 auth:
   ${BOSH_TARGET}:
     username: ${BOSH_USERNAME}
     password: ${BOSH_PASSWORD}
-EOS
+YAML
 
 bosh target $BOSH_TARGET
 
@@ -26,5 +26,17 @@ cd /tmp
 git clone https://github.com/cloudfoundry-community/postgresql-docker-boshrelease.git postgresql-docker
 cd postgresql-docker
 
-./templates/make_manifest warden broker
+mkdir -p tmp
+cat > tmp/scaling.yml << YAML
+---
+update:
+  canaries: 0
+
+jobs:
+  - name: postgresql_docker_z1
+    instances: 3
+YAML
+
+
+./templates/make_manifest warden broker embedded tmp/scaling.yml
 bosh -n deploy
