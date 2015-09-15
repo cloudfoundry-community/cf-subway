@@ -18,7 +18,7 @@ func (subway *Broker) routeProvision(instanceID string, details brokerapi.Provis
 	}
 
 	list := rand.Perm(len(subway.BackendBrokers))
-	for i := range list {
+	for _, i := range list {
 		backendBroker := subway.BackendBrokers[i]
 		err := subway.routeProvisionToBackendBroker(backendBroker, instanceID, details)
 		if err == nil {

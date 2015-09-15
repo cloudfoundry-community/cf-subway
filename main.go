@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"os"
 
 	"github.com/cloudfoundry-community/cf-subway/broker"
@@ -21,6 +22,8 @@ func runBroker(c *cli.Context) {
 }
 
 func main() {
+	rand.Seed(4200)
+
 	app := cli.NewApp()
 	app.Name = "cf-subway"
 	app.Version = "0.1.0"
