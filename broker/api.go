@@ -29,7 +29,7 @@ func (broker *Broker) Provision(instanceID string, details brokerapi.ProvisionDe
 		return errors.New("plan_id not recognized")
 	}
 
-	return broker.routeProvision(instanceID, planID)
+	return broker.routeProvision(instanceID, details)
 }
 
 // Deprovision requests the destruction of a service instance from associated sub-broker
