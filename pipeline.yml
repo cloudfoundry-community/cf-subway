@@ -8,6 +8,7 @@ jobs:
     file: cf-subway/build.yml
 
 - name: runit
+  serial: true
   public: true
   plan:
   - get: cf-subway
