@@ -7,6 +7,20 @@ jobs:
   - task: run-tests
     file: cf-subway/build.yml
 
+- name: runit
+  public: true
+  plan:
+  - get: cf-subway
+    trigger: true
+    passed: [subway]
+  - task: deploy-test-backend
+    file: cf-subway/scripts/deploy-test-backend.yml
+    config:
+      params:
+        BOSH_TARGET: {{bosh-target}}
+        BOSH_USERNAME: {{bosh-username}}
+        BOSH_PASSWORD: {{bosh-password}}
+
 resources:
 - name: cf-subway
   type: git
