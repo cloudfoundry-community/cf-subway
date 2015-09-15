@@ -9,14 +9,14 @@ import (
 )
 
 func runBroker(c *cli.Context) {
-	catalogPath := c.String("catalog")
-
 	subway := broker.NewBroker()
-	err := subway.LoadCatalog(catalogPath)
+	subway.LoadBackendBrokersFromEnv()
+
+	err := subway.LoadCatalog()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	subway.LoadBackendBrokersFromEnv()
+
 	subway.Run()
 }
 
@@ -27,15 +27,9 @@ func main() {
 	app.Usage = "Underground tunnel to multiplex many service brokers"
 	app.Commands = []cli.Command{
 		{
-			Name:  "broker",
-			Usage: "run the broker",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "catalog",
-					Value: "service-catalog.yml",
-					Usage: "service catalog supported by all backend sub-brokers",
-				},
-			},
+			Name:   "broker",
+			Usage:  "run the broker",
+			Flags:  []cli.Flag{},
 			Action: runBroker,
 		},
 	}

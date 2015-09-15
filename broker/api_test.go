@@ -9,9 +9,10 @@ import (
 )
 
 var _ = Describe("Service broker", func() {
-	var subway broker.Broker
+	var subway *broker.Broker
 
 	BeforeEach(func() {
+		subway = broker.NewBroker()
 		subway.Catalog = []brokerapi.Service{
 			{
 				Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},

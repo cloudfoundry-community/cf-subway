@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -28,15 +29,33 @@ func NewBroker() (subway *Broker) {
 	return subway
 }
 
-// LoadCatalog loads the homogenous catalog from a file
-func (subway *Broker) LoadCatalog(catalogPath string) error {
-	bytes, err := ioutil.ReadFile(catalogPath)
+// LoadCatalog loads the homogenous catalog from one of the brokers
+func (subway *Broker) LoadCatalog() error {
+	if len(subway.BackendBrokers) == 0 {
+		return errors.New("No backend broker available for plan")
+	}
+	backendBroker := subway.BackendBrokers[0]
+
+	client := &http.Client{}
+	url := fmt.Sprintf("%s/v2/catalog", backendBroker.URI)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		subway.Logger.Error("backend-catalog", err)
+		return err
+	}
+	req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
+	jsonData, err := ioutil.ReadAll(resp.Body)
+
+	catalogResponse := brokerapi.CatalogResponse{}
+	err = yaml.Unmarshal(jsonData, &catalogResponse)
 	if err != nil {
 		return err
 	}
-
-	subway.Catalog = []brokerapi.Service{}
-	return yaml.Unmarshal(bytes, &subway.Catalog)
+	subway.Catalog = catalogResponse.Services
+	return nil
 }
 
 func (subway *Broker) plans() []*brokerapi.ServicePlan {

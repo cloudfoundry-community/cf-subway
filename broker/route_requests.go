@@ -45,11 +45,12 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
 	req, err := http.NewRequest("PUT", url, nil)
 	if err != nil {
-		subway.Logger.Error("provision", err)
+		subway.Logger.Error("backend-provision", err)
 		return err
 	}
 	req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
-	_, err = client.Do(req)
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
 
 	return err
 }
