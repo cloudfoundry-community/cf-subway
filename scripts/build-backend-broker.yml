@@ -1,0 +1,10 @@
+platform: linux
+
+image: docker:///java
+
+inputs:
+- name: cf-subway
+- name: haash-broker
+
+run:
+  path: cf-subway/scripts/build-backend-broker.sh
