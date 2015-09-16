@@ -67,13 +67,18 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 			json.NewEncoder(buffer).Encode(details)
 			req, err := http.NewRequest("PUT", url, buffer)
 			if err != nil {
-				subway.Logger.Error("backend-bind", err)
+				subway.Logger.Error("backend-bind-req", err)
 				return bindingResponse.Credentials, err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
 			debug(httputil.DumpRequestOut(req, true))
+
 			resp, err := client.Do(req)
+			if err != nil {
+				subway.Logger.Error("backend-bind-resp", err)
+				return bindingResponse.Credentials, err
+			}
 			defer resp.Body.Close()
 
 			debug(httputil.DumpResponse(resp, true))
@@ -116,12 +121,17 @@ func (subway *Broker) Unbind(instanceID, bindingID string) error {
 			url := fmt.Sprintf("%s/v2/service_instances/%s/service_bindings/%s", backendBroker.URI, instanceID, bindingID)
 			req, err := http.NewRequest("DELETE", url, nil)
 			if err != nil {
-				subway.Logger.Error("backend-unbind", err)
+				subway.Logger.Error("backend-unbind-req", err)
 				return err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+
 			resp, err := client.Do(req)
+			if err != nil {
+				subway.Logger.Error("backend-unbind-resp", err)
+				return err
+			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode == http.StatusOK {
@@ -155,12 +165,17 @@ func (subway *Broker) Deprovision(instanceID string) error {
 			url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
 			req, err := http.NewRequest("DELETE", url, nil)
 			if err != nil {
-				subway.Logger.Error("backend-unbind", err)
+				subway.Logger.Error("backend-unbind-req", err)
 				return err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+
 			resp, err := client.Do(req)
+			if err != nil {
+				subway.Logger.Error("backend-unbind-resp", err)
+				return err
+			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode == http.StatusOK {

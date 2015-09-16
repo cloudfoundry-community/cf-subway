@@ -40,11 +40,16 @@ func (subway *Broker) LoadCatalog() error {
 	url := fmt.Sprintf("%s/v2/catalog", backendBroker.URI)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		subway.Logger.Error("backend-catalog", err)
+		subway.Logger.Error("backend-catalog-req", err)
 		return err
 	}
 	req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+
 	resp, err := client.Do(req)
+	if err != nil {
+		subway.Logger.Error("backend-catalog-resp", err)
+		return err
+	}
 	defer resp.Body.Close()
 
 	jsonData, err := ioutil.ReadAll(resp.Body)

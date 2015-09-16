@@ -59,7 +59,7 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	json.NewEncoder(buffer).Encode(details)
 	req, err := http.NewRequest("PUT", url, buffer)
 	if err != nil {
-		subway.Logger.Error("backend-provision", err)
+		subway.Logger.Error("backend-provision-req", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -67,6 +67,10 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	debug(httputil.DumpRequestOut(req, true))
 
 	resp, err := client.Do(req)
+	if err != nil {
+		subway.Logger.Error("backend-provision-resp", err)
+		return err
+	}
 	defer resp.Body.Close()
 
 	// FIXME: If resp.StatusCode not 200 or 201, then try next
