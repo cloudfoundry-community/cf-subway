@@ -30,7 +30,6 @@ jobs:
       params:
         manifest: cf-subway/manifest.yml
         path: cf-subway
-        current_app_name: test-subway
         environment_variables:
           BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io
           BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
