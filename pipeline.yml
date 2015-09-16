@@ -20,11 +20,11 @@ jobs:
   - aggregate:
     - put: haash-broker-1
       params:
-        manifest: build-backend-broker/manifest.yml
+        manifest: build-backend-broker/haash-broker/manifest.yml
         current_app_name: haash-broker-1
     - put: haash-broker-2
       params:
-        manifest: build-backend-broker/manifest.yml
+        manifest: build-backend-broker/haash-broker/manifest.yml
         current_app_name: haash-broker-2
     - put: subway-broker
       params:
