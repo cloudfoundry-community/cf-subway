@@ -3,6 +3,9 @@
 set -e
 set +x
 
+sudo apt-get update
+sudo apt-get install curl -y
+
 curl -f -X GET https://username:password@subway-broker.cfapps.io/v2/catalog
 
 id=$(uuid)
