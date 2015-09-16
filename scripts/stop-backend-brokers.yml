@@ -1,0 +1,17 @@
+platform: linux
+
+image: docker:///concourse/concourse-ci
+
+inputs:
+- name: cf-subway
+
+params:
+  api: https://api.run.pivotal.io
+  skip_cert_check: false
+  username:
+  password:
+  organization:
+  space:
+
+run:
+  path: cf-subway/scripts/stop-backend-brokers.sh
