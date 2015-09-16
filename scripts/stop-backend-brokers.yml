@@ -1,6 +1,7 @@
 platform: linux
 
-image: docker:///concourse/concourse-ci
+# https://github.com/starkandwayne/docker-cf
+image: docker:///starkandwayne/cf
 
 inputs:
 - name: cf-subway
