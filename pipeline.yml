@@ -42,6 +42,14 @@ jobs:
     ensure:
       task: stop-backend-brokers
       file: cf-subway/scripts/stop-backend-brokers.yml
+      config:
+        params:
+          api: https://api.run.pivotal.io
+          skip_cert_check: false
+          username: {{cf-username}}
+          password: {{cf-password}}
+          organization: {{cf-org}}
+          space: {{cf-space}}
 
 resources:
 - name: cf-subway
