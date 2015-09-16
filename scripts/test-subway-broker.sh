@@ -1,18 +1,18 @@
 #!/bin/bash
 
 set -e
-set +x
+set -x
 
 sudo apt-get update
-sudo apt-get install curl -y
+sudo apt-get install curl uuid -y
 
 curl -f -X GET https://username:password@subway-broker.cfapps.io/v2/catalog
 
 id=$(uuid)
 curl -f -X PUT https://username:password@subway-broker.cfapps.io/v2/service_instances/$id -d '{"plan_id": "1", "service_id":"1"}'
 curl -f -X PUT https://username:password@subway-broker.cfapps.io/v2/service_instances/$id/service_bindings/$id -d '{"plan_id": "1", "service_id":"1", "app_guid": "x"}'
-curl -f -X DELETE https://username:password@subway-broker.cfapps.io/v2/service_instances/$id/service_bindings/$id
-curl -f -X DELETE https://username:password@subway-broker.cfapps.io/v2/service_instances/$id
+# curl -fv -X DELETE https://username:password@subway-broker.cfapps.io/v2/service_instances/$id/service_bindings/$id -d '{"plan_id": "1", "service_id":"1"}'
+# curl -fv -X DELETE https://username:password@subway-broker.cfapps.io/v2/service_instances/$id -d '{"plan_id": "1", "service_id":"1"}'
 
 id=$(uuid)
 curl -f -X PUT https://username:password@subway-broker.cfapps.io/v2/service_instances/$id -d '{"plan_id": "1", "service_id":"1"}'
