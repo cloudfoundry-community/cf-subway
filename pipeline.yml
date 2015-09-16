@@ -17,6 +17,15 @@ jobs:
   - get: haash-broker
   - task: build-backend-broker
     file: cf-subway/scripts/build-backend-broker.yml
+  - aggregate:
+    - put: haash-broker-1
+      params:
+        manifest: build-backend-broker/manifest.yml
+        current_app_name: haash-broker-1
+    - put: haash-broker-2
+      params:
+        manifest: build-backend-broker/manifest.yml
+        current_app_name: haash-broker-2
 
 resources:
 - name: cf-subway
@@ -30,3 +39,22 @@ resources:
   source:
     uri: https://github.com/drnic/haash-broker.git
     branch: parameters
+
+- name: haash-broker-1
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    skip_cert_check: false
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
+- name: haash-broker-2
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    skip_cert_check: false
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
