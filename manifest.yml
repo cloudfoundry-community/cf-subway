@@ -1,0 +1,5 @@
+---
+applications:
+- name: subway-broker
+  memory: 128M
+
