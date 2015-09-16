@@ -25,6 +25,7 @@ For example, consider below that you are deploying Subway to tunnel to 1+ existi
 git clone https://github.com/cloudfoundry-community/cf-subway
 cd cf-subway
 cf push subway-postgresql-docker --no-start
+broker_url=$(cf app subway-p-redis | grep urls | awk '{print $2}')
 ```
 
 Now set one environment variable for each backend Postgresql node. The variable must start with `BACKEND_BROKER`.
@@ -44,7 +45,7 @@ cf start subway-postgresql-docker
 Finally, register the broker with Cloud Foundry (requires you to login as an admin at the moment).
 
 ```
-cf create-service-broker subway-postgresql-docker username password https://subway-postgresql-docker.mydomain.com
+cf create-service-broker subway-postgresql-docker username password ${broker_url}
 ```
 
 Finally:
