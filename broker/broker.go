@@ -63,11 +63,11 @@ func (subway *Broker) LoadCatalog() error {
 	return nil
 }
 
-func (subway *Broker) plans() []*brokerapi.ServicePlan {
-	plans := []*brokerapi.ServicePlan{}
+func (subway *Broker) plans() []brokerapi.ServicePlan {
+	plans := []brokerapi.ServicePlan{}
 	for _, service := range subway.Catalog {
 		for _, plan := range service.Plans {
-			plans = append(plans, &plan)
+			plans = append(plans, plan)
 		}
 	}
 	return plans
