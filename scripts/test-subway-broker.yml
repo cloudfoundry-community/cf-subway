@@ -1,0 +1,9 @@
+platform: linux
+
+image: docker:///concourse/concourse-ci
+
+inputs:
+- name: cf-subway
+
+run:
+  path: cf-subway/scripts/test-subway-broker.sh

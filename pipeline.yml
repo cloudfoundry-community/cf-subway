@@ -37,9 +37,11 @@ jobs:
           environment_variables:
             BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io
             BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
-    ensure:
-      task: stop-backend-brokers
-      file: cf-subway/scripts/stop-backend-brokers.yml
+    - task: test-subway-broker
+      file: cf-subway/scripts/test-subway-broker.yml
+    # ensure:
+    #   task: stop-backend-brokers
+    #   file: cf-subway/scripts/stop-backend-brokers.yml
 
 resources:
 - name: cf-subway
