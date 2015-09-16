@@ -71,6 +71,7 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 		subway.Logger.Error("backend-provision-resp", err)
 		return err
 	}
+	debug(httputil.DumpResponse(resp, true))
 	defer resp.Body.Close()
 
 	// FIXME: If resp.StatusCode not 200 or 201, then try next
