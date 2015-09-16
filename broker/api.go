@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal-golang/lager"
@@ -39,6 +40,10 @@ func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDe
 	return subway.routeProvision(instanceID, details)
 }
 
+type bindingResponse struct {
+	Credentials map[string]interface{} `json:"credentials"`
+}
+
 // Bind requests the creation of a service instance bindings from associated sub-broker
 func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindDetails) (interface{}, error) {
 	subway.Logger.Info("bind", lager.Data{
@@ -47,13 +52,12 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 		"plan-id":     details.PlanID,
 	})
 
-	bindingResponse := brokerapi.BindingResponse{}
+	bindingResponse := bindingResponse{}
 
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
-			bindingResponse.Credentials = map[string]interface{}{"host": "10.10.10.10"}
-			return bindingResponse, nil
+			return map[string]interface{}{"host": "10.10.10.10"}, nil
 		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
 			// Skip test backend broker
 		} else {
@@ -64,14 +68,17 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 			req, err := http.NewRequest("PUT", url, buffer)
 			if err != nil {
 				subway.Logger.Error("backend-bind", err)
-				return bindingResponse, err
+				return bindingResponse.Credentials, err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+			debug(httputil.DumpRequestOut(req, true))
 			resp, err := client.Do(req)
 			defer resp.Body.Close()
 
-			if resp.StatusCode == http.StatusCreated {
+			debug(httputil.DumpResponse(resp, true))
+
+			if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
 				jsonData, err := ioutil.ReadAll(resp.Body)
 
 				err = yaml.Unmarshal(jsonData, &bindingResponse)
@@ -82,13 +89,13 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 						"plan-id":     details.PlanID,
 						"backend-uri": backendBroker.URI,
 					})
-					return bindingResponse, nil
+					return bindingResponse.Credentials, nil
 				}
 			}
 		}
 	}
 
-	return bindingResponse, brokerapi.ErrInstanceDoesNotExist
+	return bindingResponse.Credentials, brokerapi.ErrInstanceDoesNotExist
 }
 
 // Unbind requests the destructions of a service instance binding from associated sub-broker

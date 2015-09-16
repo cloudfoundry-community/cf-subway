@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal-golang/lager"
@@ -26,6 +28,14 @@ func (subway *Broker) routeProvision(instanceID string, details brokerapi.Provis
 		}
 	}
 	return brokerapi.ErrInstanceLimitMet
+}
+
+func debug(data []byte, err error) {
+	if err == nil {
+		fmt.Printf("%s\n\n", data)
+	} else {
+		log.Fatalf("%s\n\n", err)
+	}
 }
 
 func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker, instanceID string, details brokerapi.ProvisionDetails) (err error) {
@@ -54,8 +64,16 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
+	debug(httputil.DumpRequestOut(req, true))
+
 	resp, err := client.Do(req)
 	defer resp.Body.Close()
+
+	// FIXME: If resp.StatusCode not 200 or 201, then try next
+	if resp.StatusCode >= 400 {
+		// FIXME: allow return of this error to end user
+		return errors.New("unknown plan")
+	}
 
 	// TODO: ProvisioningResponse not supported by brokerapi as 9f368e578
 	return err

@@ -78,7 +78,7 @@ var _ = Describe("Service broker", func() {
 			creds, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
 			Ω(err).ToNot(HaveOccurred())
 			Ω(creds).ToNot(BeNil())
-			credentials := creds.(brokerapi.BindingResponse).Credentials.(map[string]interface{})
+			credentials := creds.(map[string]interface{})
 			Ω(credentials["host"]).To(Equal("10.10.10.10"))
 		})
 
