@@ -20,15 +20,16 @@ jobs:
   - aggregate:
     - put: haash-broker-1
       params:
-        manifest: build-backend-broker/haash-broker/manifest.yml
-        current_app_name: haash-broker-1
+        manifest: cf-subway/scripts/cfmanifests/haash-broker-1.yml
+        path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
     - put: haash-broker-2
       params:
-        manifest: build-backend-broker/haash-broker/manifest.yml
-        current_app_name: haash-broker-2
+        manifest: cf-subway/scripts/cfmanifests/haash-broker-2.yml
+        path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
     - put: subway-broker
       params:
         manifest: cf-subway/manifest.yml
+        path: cf-subway
         current_app_name: test-subway
         environment_variables:
           BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io

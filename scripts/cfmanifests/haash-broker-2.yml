@@ -1,0 +1,5 @@
+---
+applications:
+- name: haash-broker-2
+  memory: 512M
+  path: build/libs/haash-broker-0.0.1-SNAPSHOT.jar
