@@ -6,6 +6,7 @@ set -x
 sudo apt-get update
 sudo apt-get install curl uuid -y
 
+curl -f -X GET https://warreng:natedogg@haash-broker-1.cfapps.io/v2/catalog
 curl -f -X GET https://username:password@subway-broker.cfapps.io/v2/catalog
 
 id=$(uuid)
