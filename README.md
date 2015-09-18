@@ -109,9 +109,9 @@ The CI pipeline is publicly visible at https://ci.starkandwayne.com/pipelines/su
 
 To update CI pipeline in Concourse:
 
-\`\`\`
-
-fly -t snw c -c pipeline.yml subway\`\`\`
+```
+fly -t snw c -c pipeline.yml subway
+```
 
 Thanks
 ------
