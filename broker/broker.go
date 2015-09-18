@@ -78,10 +78,21 @@ func (subway *Broker) plans() []brokerapi.ServicePlan {
 
 // Run starts the Martini webapp handler
 func (subway *Broker) Run() {
-	credentials := brokerapi.BrokerCredentials{
-		Username: "username",
-		Password: "password",
+	username := os.Getenv("SUBWAY_USERNAME")
+	if username == "" {
+		username = "username"
 	}
+
+	password := os.Getenv("SUBWAY_PASSWORD")
+	if password == "" {
+		password = "password"
+	}
+
+	credentials := brokerapi.BrokerCredentials{
+		Username: username,
+		Password: password,
+	}
+	fmt.Println(credentials)
 
 	port := os.Getenv("PORT")
 	if port == "" {

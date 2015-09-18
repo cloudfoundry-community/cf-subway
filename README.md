@@ -38,8 +38,12 @@ For example, consider below that you are deploying Subway to tunnel to 1+ existi
 git clone https://github.com/cloudfoundry-community/cf-subway
 cd cf-subway
 cf push subway-postgresql-docker --no-start
+cf set-env subway-postgresql-docker SUBWAY_USERNAME secretusername
+cf set-env subway-postgresql-docker SUBWAY_PASSWORD secretpassword
 broker_url=$(cf app subway-p-redis | grep urls | awk '{print $2}')
 ```
+
+The credentials `secretusername` and `secretpassword` are used later when registering the broker (`cf create-service-broker`). By default they are `username` and `password` respectively; if you forget to explicit set them.
 
 Now set one environment variable for each backend Postgresql node. The variable must start with `BACKEND_BROKER`.
 
@@ -58,7 +62,7 @@ cf start subway-postgresql-docker
 Finally, register the broker with Cloud Foundry (requires you to login as an admin at the moment).
 
 ```
-cf create-service-broker subway-postgresql-docker username password ${broker_url}
+cf create-service-broker subway-postgresql-docker secretusername secretpassword ${broker_url}
 ```
 
 Finally:

@@ -21,7 +21,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "cf-subway"
 	app.Version = "0.1.0"
-	app.Usage = "Underground tunnel to multiplex many service brokers"
+	app.Usage = "Underground tunnel to multiplex multiple homogenous service brokers"
 	app.Commands = []cli.Command{
 		{
 			Name:   "broker",
