@@ -64,6 +64,9 @@ func (subway *Broker) LoadCatalog() error {
 }
 
 func (subway *Broker) plans() []brokerapi.ServicePlan {
+	if len(subway.Catalog) == 0 {
+		subway.LoadCatalog()
+	}
 	plans := []brokerapi.ServicePlan{}
 	for _, service := range subway.Catalog {
 		for _, plan := range service.Plans {
