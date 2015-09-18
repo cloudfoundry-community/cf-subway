@@ -14,6 +14,19 @@ Subway is a multiplexing service broker that allows you to scale out single node
 
 -	CI pipeline https://ci.starkandwayne.com/pipelines/subway
 
+How does it work?
+-----------------
+
+When an end user runs `cf create-service` the Provision request goes to the Subway broker; which randomly assigns it to backend brokers until one of them accepts it (backend brokers might not have capacity for the requested service plan).
+
+When the end user runs `cf bind-service` the Bind request goes to the Subway broker; which forwards the Bind request on to the correct backend broker; and returns the resulting binding credentials to Cloud Controller.
+
+Applications bound to services then communicate directly with the backend service - neither Subway nor the Backend Broker is involved in direct application-to-service communication.
+
+Similarly to Bind, when the end user runs `cf unbind-service` or `cf delete-service` the request goes to the Subway broker, which forwards the request to the correct broker.
+
+As an aside, the implementation of "forwards the request to the correct broker" involves first sending the requests to random incorrect brokers until the correct broker is discovered. Subway is stateless and does not remember how it assigned service instances to backend brokers.
+
 Deployment
 ----------
 
