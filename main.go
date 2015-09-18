@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"math/rand"
 	"os"
 
@@ -12,11 +11,6 @@ import (
 func runBroker(c *cli.Context) {
 	subway := broker.NewBroker()
 	subway.LoadBackendBrokersFromEnv()
-
-	err := subway.LoadCatalog()
-	if err != nil {
-		log.Fatalln(err)
-	}
 
 	subway.Run()
 }

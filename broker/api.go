@@ -16,6 +16,11 @@ import (
 
 // Services is used by Cloud Foundry to learn the available catalog of services
 func (subway *Broker) Services() []brokerapi.Service {
+	err := subway.LoadCatalog()
+	if err != nil {
+		subway.Logger.Error("catalog", err)
+	}
+
 	return subway.Catalog
 }
 
