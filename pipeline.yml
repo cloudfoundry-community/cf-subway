@@ -41,6 +41,11 @@ jobs:
             BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
     - task: test-subway-broker
       file: cf-subway/scripts/test-subway-broker.yml
+      config:
+        params:
+          SUBWAY_USERNAME: secretusername
+          SUBWAY_PASSWORD: secretpassword
+
     ensure:
       task: stop-backend-brokers
       file: cf-subway/scripts/stop-backend-brokers.yml

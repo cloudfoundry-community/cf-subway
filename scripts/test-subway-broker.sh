@@ -3,6 +3,9 @@
 set -e
 set -x
 
+SUBWAY_USERNAME=${SUBWAY_USERNAME:-username}
+SUBWAY_PASSWORD=${SUBWAY_PASSWORD:-password}
+
 sudo apt-get update
 sudo apt-get install curl uuid -y
 
