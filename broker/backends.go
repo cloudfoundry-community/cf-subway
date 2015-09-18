@@ -26,14 +26,23 @@ func (subway *Broker) LoadBackendBrokersFromEnv() {
 			backendURI := pair[1]
 			uri, err := url.Parse(backendURI)
 			if err != nil {
-				subway.Logger.Fatal("backend-brokers", fmt.Errorf("Could not parse $%s %s", pair[0], backendURI))
-			} else {
-				p, _ := uri.User.Password()
-				url := fmt.Sprintf("%s://%s", uri.Scheme, uri.Host)
-				backendBroker := BackendBroker{url, uri.User.Username(), p}
-				subway.BackendBrokers = append(subway.BackendBrokers, &backendBroker)
-				subway.Logger.Info("backend-brokers", lager.Data{"backend-broker": backendURI})
+				subway.Logger.Error("backend-brokers", fmt.Errorf("Could not parse $%s %s", pair[0], backendURI))
+				continue
 			}
+			if uri.User == nil {
+				subway.Logger.Error("backend-brokers", fmt.Errorf("Missing username:password in URL: %s", backendURI))
+				continue
+			}
+			password, _ := uri.User.Password()
+			username := uri.User.Username()
+			if username == "" || password == "" {
+				subway.Logger.Error("backend-brokers", fmt.Errorf("Missing username:password in URL: %s", backendURI))
+				continue
+			}
+			url := fmt.Sprintf("%s://%s", uri.Scheme, uri.Host)
+			backendBroker := BackendBroker{url, username, password}
+			subway.BackendBrokers = append(subway.BackendBrokers, &backendBroker)
+			subway.Logger.Info("backend-brokers", lager.Data{"backend-broker": backendURI})
 		}
 	}
 }
