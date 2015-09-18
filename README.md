@@ -27,6 +27,8 @@ Similarly to Bind, when the end user runs `cf unbind-service` or `cf delete-serv
 
 As an aside, the implementation of "forwards the request to the correct broker" involves first sending the requests to random incorrect brokers until the correct broker is discovered. Subway is stateless and does not remember how it assigned service instances to backend brokers.
 
+![diagram](http://cl.ly/image/2A420J1Z0H3z/subway_diagram.png)
+
 Deployment
 ----------
 
