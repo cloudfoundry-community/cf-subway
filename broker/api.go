@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal-golang/lager"
-	"gopkg.in/yaml.v2"
 )
 
 // Services is used by Cloud Foundry to learn the available catalog of services
@@ -91,7 +91,13 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 			if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
 				jsonData, err := ioutil.ReadAll(resp.Body)
 
-				err = yaml.Unmarshal(jsonData, &bindingResponse)
+				rawBindingResponse := map[string]interface{}{}
+				if err = json.Unmarshal(jsonData, &rawBindingResponse); err != nil {
+					return bindingResponse.Credentials, err
+				}
+				if err = mapstructure.WeakDecode(rawBindingResponse, &bindingResponse); err != nil {
+					return bindingResponse.Credentials, err
+				}
 				if err == nil {
 					subway.Logger.Info("bind-success", lager.Data{
 						"instance-id": instanceID,

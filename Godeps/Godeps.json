@@ -19,6 +19,10 @@
 			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
 		},
 		{
+			"ImportPath": "github.com/mitchellh/mapstructure",
+			"Rev": "281073eb9eb092240d33ef253c404f1cca550309"
+		},
+		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.2.0-8-g25380c6",
 			"Rev": "25380c62e61d3f90436be125b8127dbae578fdef"
