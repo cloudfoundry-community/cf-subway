@@ -66,7 +66,13 @@ cf start $appname
 Finally, register the broker with Cloud Foundry (requires you to login as an admin at the moment).
 
 ```
-cf create-service-broker $appname secretusername secretpassword ${broker_url}
+cf create-service-broker postgresql-docker secretusername secretpassword http://${broker_url}
+```
+
+If you are replacing an existing broker with Subway then you will run:
+
+```
+cf update-service-broker postgresql-docker secretusername secretpassword http://${broker_url}
 ```
 
 Finally:
