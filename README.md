@@ -103,25 +103,21 @@ Development
 To update dependencies:
 
 ```
-
-godep save ./... git add Godeps git commit -m "update deps"
-
+godep save ./...
+git add Godeps
+git commit -m "update deps"
 ```
 
 To run tests locally:
 
 ```
-
-ginkgo \*
-
+ginkgo -r
 ```
 
 To run tests within Concourse:
 
 ```
-
 fly e
-
 ```
 
 CI
