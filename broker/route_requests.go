@@ -56,7 +56,10 @@ func (subway *Broker) routeProvisionToBackendBroker(backendBroker *BackendBroker
 	client := &http.Client{}
 	url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
 	buffer := &bytes.Buffer{}
-	json.NewEncoder(buffer).Encode(details)
+	if err = json.NewEncoder(buffer).Encode(details); err != nil {
+		subway.Logger.Error("backend-provision-encode-details", err)
+		return err
+	}
 	req, err := http.NewRequest("PUT", url, buffer)
 	if err != nil {
 		subway.Logger.Error("backend-provision-req", err)
