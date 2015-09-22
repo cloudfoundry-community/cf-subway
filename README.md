@@ -40,10 +40,11 @@ For example, consider below that you are deploying Subway to tunnel to 1+ existi
 ```
 git clone https://github.com/cloudfoundry-community/cf-subway
 cd cf-subway
-cf push subway-postgresql-docker --no-start
-cf set-env subway-postgresql-docker SUBWAY_USERNAME secretusername
-cf set-env subway-postgresql-docker SUBWAY_PASSWORD secretpassword
-broker_url=$(cf app subway-p-redis | grep urls | awk '{print $2}')
+appname=subway-postgresql-docker
+cf push $appname --no-start
+cf set-env $appname SUBWAY_USERNAME secretusername
+cf set-env $appname SUBWAY_PASSWORD secretpassword
+broker_url=$(cf app $appname | grep urls | awk '{print $2}')
 ```
 
 The credentials `secretusername` and `secretpassword` are used later when registering the broker (`cf create-service-broker`). By default they are `username` and `password` respectively; if you forget to explicit set them.
@@ -51,21 +52,21 @@ The credentials `secretusername` and `secretpassword` are used later when regist
 Now set one environment variable for each backend Postgresql node. The variable must start with `BACKEND_BROKER`.
 
 ```
-cf set-env subway-postgresql-docker BACKEND_BROKER_1 http://containers:containers@10.10.10.10
-cf set-env subway-postgresql-docker BACKEND_BROKER_2 http://containers:containers@10.10.10.11
-cf set-env subway-postgresql-docker BACKEND_BROKER_3 http://containers:containers@10.10.10.12
+cf set-env $appname BACKEND_BROKER_1 http://containers:containers@10.10.10.10
+cf set-env $appname BACKEND_BROKER_2 http://containers:containers@10.10.10.11
+cf set-env $appname BACKEND_BROKER_3 http://containers:containers@10.10.10.12
 ```
 
 Now start the Subway broker app:
 
 ```
-cf start subway-postgresql-docker
+cf start $appname
 ```
 
 Finally, register the broker with Cloud Foundry (requires you to login as an admin at the moment).
 
 ```
-cf create-service-broker subway-postgresql-docker secretusername secretpassword ${broker_url}
+cf create-service-broker $appname secretusername secretpassword ${broker_url}
 ```
 
 Finally:
