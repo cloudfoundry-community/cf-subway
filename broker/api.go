@@ -69,7 +69,10 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 			client := &http.Client{}
 			url := fmt.Sprintf("%s/v2/service_instances/%s/service_bindings/%s", backendBroker.URI, instanceID, bindingID)
 			buffer := &bytes.Buffer{}
-			json.NewEncoder(buffer).Encode(details)
+			if err := json.NewEncoder(buffer).Encode(details); err != nil {
+				subway.Logger.Error("backend-bind-encode-details", err)
+				return bindingResponse.Credentials, err
+			}
 			req, err := http.NewRequest("PUT", url, buffer)
 			if err != nil {
 				subway.Logger.Error("backend-bind-req", err)
