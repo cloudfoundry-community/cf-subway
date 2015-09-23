@@ -119,19 +119,12 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 }
 
 // Unbind requests the destructions of a service instance binding from associated sub-broker
-func (subway *Broker) Unbind(instanceID, bindingID string) error {
+func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.UnbindDetails) error {
 	subway.Logger.Info("unbind", lager.Data{
 		"instance-id": instanceID,
 		"binding-id":  bindingID,
 	})
 
-	// brokerapi does not pass thru service_id/plan_id from CF;
-	// so to match the required API for some brokers, pass thru empty
-	// values
-	var details struct {
-		ServiceID string `json:"service_id"`
-		PlanID    string `json:"plan_id"`
-	}
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(details); err != nil {
 		subway.Logger.Error("backend-unbind-encode-details", err)
@@ -178,18 +171,11 @@ func (subway *Broker) Unbind(instanceID, bindingID string) error {
 }
 
 // Deprovision requests the destruction of a service instance from associated sub-broker
-func (subway *Broker) Deprovision(instanceID string) error {
+func (subway *Broker) Deprovision(instanceID string, details brokerapi.DeprovisionDetails) error {
 	subway.Logger.Info("deprovision", lager.Data{
 		"instance-id": instanceID,
 	})
 
-	// brokerapi does not pass thru service_id/plan_id from CF;
-	// so to match the required API for some brokers, pass thru empty
-	// values
-	var details struct {
-		ServiceID string `json:"service_id"`
-		PlanID    string `json:"plan_id"`
-	}
 	buffer := &bytes.Buffer{}
 	if err := json.NewEncoder(buffer).Encode(details); err != nil {
 		subway.Logger.Error("backend-deprovision-encode-details", err)

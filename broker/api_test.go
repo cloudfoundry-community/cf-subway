@@ -93,14 +93,23 @@ var _ = Describe("Service broker", func() {
 
 	})
 
-	Describe(".Unind", func() {
+	Describe(".Unbind", func() {
+		var details brokerapi.UnbindDetails
+
+		BeforeEach(func() {
+			details = brokerapi.UnbindDetails{
+				PlanID:    "plan-id",
+				ServiceID: "service-id",
+			}
+		})
+
 		It("one broker recognizes service instance", func() {
 			subway.BackendBrokers = []*broker.BackendBroker{
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Unbind("service-id", "bind-id")
+			err := subway.Unbind("service-id", "bind-id", details)
 			Ω(err).ToNot(HaveOccurred())
 		})
 
@@ -109,20 +118,29 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Unbind("service-id", "bind-id")
+			err := subway.Unbind("service-id", "bind-id", details)
 			Ω(err).To(HaveOccurred())
 		})
 
 	})
 
 	Describe(".Deprovision", func() {
+		var details brokerapi.DeprovisionDetails
+
+		BeforeEach(func() {
+			details = brokerapi.DeprovisionDetails{
+				PlanID:    "plan-id",
+				ServiceID: "service-id",
+			}
+		})
+
 		It("one broker recognizes service instance", func() {
 			subway.BackendBrokers = []*broker.BackendBroker{
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Deprovision("service-id")
+			err := subway.Deprovision("service-id", details)
 			Ω(err).ToNot(HaveOccurred())
 		})
 
@@ -131,7 +149,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Deprovision("service-id")
+			err := subway.Deprovision("service-id", details)
 			Ω(err).To(HaveOccurred())
 		})
 

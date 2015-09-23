@@ -115,7 +115,16 @@ func deprovision(serviceBroker ServiceBroker, router httpRouter, logger lager.Lo
 			instanceIDLogKey: instanceID,
 		})
 
-		if err := serviceBroker.Deprovision(instanceID); err != nil {
+		var details DeprovisionDetails
+		if err := json.NewDecoder(req.Body).Decode(&details); err != nil {
+			logger.Error(invalidBindDetailsErrorKey, err)
+			respond(w, statusUnprocessableEntity, ErrorResponse{
+				Description: err.Error(),
+			})
+			return
+		}
+
+		if err := serviceBroker.Deprovision(instanceID, details); err != nil {
 			switch err {
 			case ErrInstanceDoesNotExist:
 				logger.Error(instanceMissingErrorKey, err)
@@ -194,7 +203,16 @@ func unbind(serviceBroker ServiceBroker, router httpRouter, logger lager.Logger)
 			bindingIDLogKey:  bindingID,
 		})
 
-		if err := serviceBroker.Unbind(instanceID, bindingID); err != nil {
+		var details UnbindDetails
+		if err := json.NewDecoder(req.Body).Decode(&details); err != nil {
+			logger.Error(invalidBindDetailsErrorKey, err)
+			respond(w, statusUnprocessableEntity, ErrorResponse{
+				Description: err.Error(),
+			})
+			return
+		}
+
+		if err := serviceBroker.Unbind(instanceID, bindingID, details); err != nil {
 			switch err {
 			case ErrInstanceDoesNotExist:
 				logger.Error(instanceMissingErrorKey, err)

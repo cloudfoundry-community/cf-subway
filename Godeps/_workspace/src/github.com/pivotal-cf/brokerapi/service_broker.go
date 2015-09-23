@@ -6,10 +6,10 @@ type ServiceBroker interface {
 	Services() []Service
 
 	Provision(instanceID string, details ProvisionDetails) error
-	Deprovision(instanceID string) error
+	Deprovision(instanceID string, details DeprovisionDetails) error
 
 	Bind(instanceID, bindingID string, details BindDetails) (interface{}, error)
-	Unbind(instanceID, bindingID string) error
+	Unbind(instanceID, bindingID string, details UnbindDetails) error
 }
 
 type ProvisionDetails struct {
@@ -25,6 +25,16 @@ type BindDetails struct {
 	PlanID     string                 `json:"plan_id"`
 	ServiceID  string                 `json:"service_id"`
 	Parameters map[string]interface{} `json:"parameters,omitempty"`
+}
+
+type UnbindDetails struct {
+	PlanID    string `json:"plan_id"`
+	ServiceID string `json:"service_id"`
+}
+
+type DeprovisionDetails struct {
+	PlanID    string `json:"plan_id"`
+	ServiceID string `json:"service_id"`
 }
 
 var (
