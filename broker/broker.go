@@ -12,8 +12,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Broker is the core struct for the Broker webapp
-type Broker struct {
+type Broker struct // Broker is the core struct for the Broker webapp
+{
 	Catalog        []brokerapi.Service
 	BackendBrokers []*BackendBroker
 

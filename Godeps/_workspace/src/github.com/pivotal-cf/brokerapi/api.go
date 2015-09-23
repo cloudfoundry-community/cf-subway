@@ -20,6 +20,8 @@ const bindingIDLogKey = "binding-id"
 
 const invalidServiceDetailsErrorKey = "invalid-service-details"
 const invalidBindDetailsErrorKey = "invalid-bind-details"
+const invalidUnbindDetailsErrorKey = "invalid-unbind-details"
+const invalidDeprovisionDetailsErrorKey = "invalid-deprovision-details"
 const instanceLimitReachedErrorKey = "instance-limit-reached"
 const instanceAlreadyExistsErrorKey = "instance-already-exists"
 const bindingAlreadyExistsErrorKey = "binding-already-exists"
@@ -117,7 +119,7 @@ func deprovision(serviceBroker ServiceBroker, router httpRouter, logger lager.Lo
 
 		var details DeprovisionDetails
 		if err := json.NewDecoder(req.Body).Decode(&details); err != nil {
-			logger.Error(invalidBindDetailsErrorKey, err)
+			logger.Error(invalidDeprovisionDetailsErrorKey, err)
 			respond(w, statusUnprocessableEntity, ErrorResponse{
 				Description: err.Error(),
 			})
@@ -205,7 +207,7 @@ func unbind(serviceBroker ServiceBroker, router httpRouter, logger lager.Logger)
 
 		var details UnbindDetails
 		if err := json.NewDecoder(req.Body).Decode(&details); err != nil {
-			logger.Error(invalidBindDetailsErrorKey, err)
+			logger.Error(invalidUnbindDetailsErrorKey, err)
 			respond(w, statusUnprocessableEntity, ErrorResponse{
 				Description: err.Error(),
 			})

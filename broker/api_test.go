@@ -4,7 +4,6 @@ import (
 	"github.com/cloudfoundry-community/cf-subway/broker"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	"github.com/pivotal-cf/brokerapi"
 )
 
