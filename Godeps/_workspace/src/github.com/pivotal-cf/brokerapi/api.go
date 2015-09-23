@@ -117,13 +117,9 @@ func deprovision(serviceBroker ServiceBroker, router httpRouter, logger lager.Lo
 			instanceIDLogKey: instanceID,
 		})
 
-		var details DeprovisionDetails
-		if err := json.NewDecoder(req.Body).Decode(&details); err != nil {
-			logger.Error(invalidDeprovisionDetailsErrorKey, err)
-			respond(w, statusUnprocessableEntity, ErrorResponse{
-				Description: err.Error(),
-			})
-			return
+		details := DeprovisionDetails{
+			PlanID:    vars["plan_id"],
+			ServiceID: vars["service_id"],
 		}
 
 		if err := serviceBroker.Deprovision(instanceID, details); err != nil {
@@ -205,13 +201,9 @@ func unbind(serviceBroker ServiceBroker, router httpRouter, logger lager.Logger)
 			bindingIDLogKey:  bindingID,
 		})
 
-		var details UnbindDetails
-		if err := json.NewDecoder(req.Body).Decode(&details); err != nil {
-			logger.Error(invalidUnbindDetailsErrorKey, err)
-			respond(w, statusUnprocessableEntity, ErrorResponse{
-				Description: err.Error(),
-			})
-			return
+		details := UnbindDetails{
+			PlanID:    vars["plan_id"],
+			ServiceID: vars["service_id"],
 		}
 
 		if err := serviceBroker.Unbind(instanceID, bindingID, details); err != nil {

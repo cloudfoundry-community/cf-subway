@@ -167,13 +167,11 @@ var _ = Describe("Service Broker API", func() {
 	})
 
 	Describe("instance lifecycle endpoint", func() {
-		makeInstanceDeprovisioningRequest := func(instanceID string, details brokerapi.DeprovisionDetails) *testflight.Response {
+		makeInstanceDeprovisioningRequest := func(instanceID string) *testflight.Response {
 			response := &testflight.Response{}
 			testflight.WithServer(brokerAPI, func(r *testflight.Requester) {
-				path := "/v2/service_instances/" + instanceID
-				buffer := &bytes.Buffer{}
-				json.NewEncoder(buffer).Encode(details)
-				request, err := http.NewRequest("DELETE", path, buffer)
+				path := fmt.Sprintf("/v2/service_instances/%s?plan_id=plan-id&service_id=service-id", instanceID)
+				request, err := http.NewRequest("DELETE", path, strings.NewReader(""))
 				Expect(err).NotTo(HaveOccurred())
 				request.Header.Add("Content-Type", "application/json")
 				request.SetBasicAuth("username", "password")
@@ -343,18 +341,13 @@ var _ = Describe("Service Broker API", func() {
 		Describe("deprovisioning", func() {
 			It("calls Deprovision on the service broker with the instance id", func() {
 				instanceID := uniqueInstanceID()
-				details := brokerapi.DeprovisionDetails{
-					ServiceID: "service-id",
-					PlanID:    "plan-id",
-				}
-				makeInstanceDeprovisioningRequest(instanceID, details)
+				makeInstanceDeprovisioningRequest(instanceID)
 				Expect(fakeServiceBroker.DeprovisionedInstanceIDs).To(ContainElement(instanceID))
 			})
 
 			Context("when the instance exists", func() {
 				var instanceID string
 				var provisionDetails brokerapi.ProvisionDetails
-				var details brokerapi.DeprovisionDetails
 
 				BeforeEach(func() {
 					instanceID = uniqueInstanceID()
@@ -364,47 +357,35 @@ var _ = Describe("Service Broker API", func() {
 						SpaceGUID:        "space-guid",
 					}
 					makeInstanceProvisioningRequest(instanceID, provisionDetails)
-					details = brokerapi.DeprovisionDetails{
-						ServiceID: "service-id",
-						PlanID:    "plan-id",
-					}
 				})
 
 				It("returns a 200", func() {
-					response := makeInstanceDeprovisioningRequest(instanceID, details)
+					response := makeInstanceDeprovisioningRequest(instanceID)
 					Expect(response.StatusCode).To(Equal(200))
 				})
 
 				It("returns an empty JSON object", func() {
-					response := makeInstanceDeprovisioningRequest(instanceID, details)
+					response := makeInstanceDeprovisioningRequest(instanceID)
 					Expect(response.Body).To(MatchJSON(`{}`))
 				})
 			})
 
 			Context("when the instance does not exist", func() {
 				var instanceID string
-				var details brokerapi.DeprovisionDetails
-
-				BeforeEach(func() {
-					details = brokerapi.DeprovisionDetails{
-						ServiceID: "service-id",
-						PlanID:    "plan-id",
-					}
-				})
 
 				It("returns a 410", func() {
-					response := makeInstanceDeprovisioningRequest(uniqueInstanceID(), details)
+					response := makeInstanceDeprovisioningRequest(uniqueInstanceID())
 					Expect(response.StatusCode).To(Equal(410))
 				})
 
 				It("returns an empty JSON object", func() {
-					response := makeInstanceDeprovisioningRequest(uniqueInstanceID(), details)
+					response := makeInstanceDeprovisioningRequest(uniqueInstanceID())
 					Expect(response.Body).To(MatchJSON(`{}`))
 				})
 
 				It("logs an appropriate error", func() {
 					instanceID = uniqueInstanceID()
-					makeInstanceDeprovisioningRequest(instanceID, details)
+					makeInstanceDeprovisioningRequest(instanceID)
 					Expect(lastLogLine().Message).To(ContainSubstring("deprovision.instance-missing"))
 					Expect(lastLogLine().Data["error"]).To(ContainSubstring("instance does not exist"))
 				})
@@ -413,7 +394,6 @@ var _ = Describe("Service Broker API", func() {
 			Context("when instance deprovisioning fails", func() {
 				var instanceID string
 				var provisionDetails brokerapi.ProvisionDetails
-				var details brokerapi.DeprovisionDetails
 
 				BeforeEach(func() {
 					instanceID = uniqueInstanceID()
@@ -423,11 +403,6 @@ var _ = Describe("Service Broker API", func() {
 						SpaceGUID:        "space-guid",
 					}
 					makeInstanceProvisioningRequest(instanceID, provisionDetails)
-
-					details = brokerapi.DeprovisionDetails{
-						ServiceID: "service-id",
-						PlanID:    "plan-id",
-					}
 				})
 
 				BeforeEach(func() {
@@ -435,17 +410,17 @@ var _ = Describe("Service Broker API", func() {
 				})
 
 				It("returns a 500", func() {
-					response := makeInstanceDeprovisioningRequest(instanceID, details)
+					response := makeInstanceDeprovisioningRequest(instanceID)
 					Expect(response.StatusCode).To(Equal(500))
 				})
 
 				It("returns json with a description field and a useful error message", func() {
-					response := makeInstanceDeprovisioningRequest(instanceID, details)
+					response := makeInstanceDeprovisioningRequest(instanceID)
 					Expect(response.Body).To(MatchJSON(`{"description":"broker failed"}`))
 				})
 
 				It("logs an appropriate error", func() {
-					makeInstanceDeprovisioningRequest(instanceID, details)
+					makeInstanceDeprovisioningRequest(instanceID)
 					Expect(lastLogLine().Message).To(ContainSubstring("provision.unknown-error"))
 					Expect(lastLogLine().Data["error"]).To(ContainSubstring("broker failed"))
 				})
@@ -614,14 +589,12 @@ var _ = Describe("Service Broker API", func() {
 		})
 
 		Describe("unbinding", func() {
-			makeUnbindingRequest := func(instanceID string, bindingID string, details brokerapi.UnbindDetails) *testflight.Response {
+			makeUnbindingRequest := func(instanceID string, bindingID string) *testflight.Response {
 				response := &testflight.Response{}
 				testflight.WithServer(brokerAPI, func(r *testflight.Requester) {
-					path := fmt.Sprintf("/v2/service_instances/%s/service_bindings/%s",
+					path := fmt.Sprintf("/v2/service_instances/%s/service_bindings/%s?plan_id=plan-id&service_id=service-id",
 						instanceID, bindingID)
-					buffer := &bytes.Buffer{}
-					json.NewEncoder(buffer).Encode(details)
-					request, _ := http.NewRequest("DELETE", path, buffer)
+					request, _ := http.NewRequest("DELETE", path, strings.NewReader(""))
 					request.Header.Add("Content-Type", "application/json")
 					request.SetBasicAuth("username", "password")
 
@@ -633,7 +606,6 @@ var _ = Describe("Service Broker API", func() {
 			Context("when the associated instance exists", func() {
 				var instanceID string
 				var provisionDetails brokerapi.ProvisionDetails
-				var details brokerapi.UnbindDetails
 
 				BeforeEach(func() {
 					instanceID = uniqueInstanceID()
@@ -643,11 +615,6 @@ var _ = Describe("Service Broker API", func() {
 						SpaceGUID:        "space-guid",
 					}
 					makeInstanceProvisioningRequest(instanceID, provisionDetails)
-
-					details = brokerapi.UnbindDetails{
-						PlanID:    "plan-id",
-						ServiceID: "service-id",
-					}
 				})
 
 				Context("and the binding exists", func() {
@@ -659,24 +626,24 @@ var _ = Describe("Service Broker API", func() {
 					})
 
 					It("returns a 200", func() {
-						response := makeUnbindingRequest(instanceID, bindingID, details)
+						response := makeUnbindingRequest(instanceID, bindingID)
 						Expect(response.StatusCode).To(Equal(200))
 					})
 
 					It("returns an empty JSON object", func() {
-						response := makeUnbindingRequest(instanceID, bindingID, details)
+						response := makeUnbindingRequest(instanceID, bindingID)
 						Expect(response.Body).To(MatchJSON(`{}`))
 					})
 				})
 
 				Context("but the binding does not exist", func() {
 					It("returns a 410", func() {
-						response := makeUnbindingRequest(instanceID, "does-not-exist", details)
+						response := makeUnbindingRequest(instanceID, "does-not-exist")
 						Expect(response.StatusCode).To(Equal(410))
 					})
 
 					It("logs an appropriate error message", func() {
-						makeUnbindingRequest(instanceID, "does-not-exist", details)
+						makeUnbindingRequest(instanceID, "does-not-exist")
 
 						Expect(lastLogLine().Message).To(ContainSubstring("bind.binding-missing"))
 						Expect(lastLogLine().Data["error"]).To(ContainSubstring("binding does not exist"))
@@ -686,28 +653,20 @@ var _ = Describe("Service Broker API", func() {
 
 			Context("when the associated instance does not exist", func() {
 				var instanceID string
-				var details brokerapi.UnbindDetails
-
-				BeforeEach(func() {
-					details = brokerapi.UnbindDetails{
-						PlanID:    "plan-id",
-						ServiceID: "service-id",
-					}
-				})
 
 				It("returns a 404", func() {
-					response := makeUnbindingRequest(uniqueInstanceID(), uniqueBindingID(), details)
+					response := makeUnbindingRequest(uniqueInstanceID(), uniqueBindingID())
 					Expect(response.StatusCode).To(Equal(404))
 				})
 
 				It("returns an empty JSON object", func() {
-					response := makeUnbindingRequest(uniqueInstanceID(), uniqueBindingID(), details)
+					response := makeUnbindingRequest(uniqueInstanceID(), uniqueBindingID())
 					Expect(response.Body).To(MatchJSON(`{}`))
 				})
 
 				It("logs an appropriate error", func() {
 					instanceID = uniqueInstanceID()
-					makeUnbindingRequest(instanceID, uniqueBindingID(), details)
+					makeUnbindingRequest(instanceID, uniqueBindingID())
 
 					Expect(lastLogLine().Message).To(ContainSubstring("bind.instance-missing"))
 					Expect(lastLogLine().Data["error"]).To(ContainSubstring("instance does not exist"))
