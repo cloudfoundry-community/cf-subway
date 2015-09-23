@@ -368,6 +368,16 @@ var _ = Describe("Service Broker API", func() {
 					response := makeInstanceDeprovisioningRequest(instanceID)
 					Expect(response.Body).To(MatchJSON(`{}`))
 				})
+
+				It("contains plan_id", func() {
+					makeInstanceDeprovisioningRequest(instanceID)
+					Expect(fakeServiceBroker.DeprovisionDetails.PlanID).To(Equal("plan-id"))
+				})
+
+				It("contains service_id", func() {
+					makeInstanceDeprovisioningRequest(instanceID)
+					Expect(fakeServiceBroker.DeprovisionDetails.ServiceID).To(Equal("service-id"))
+				})
 			})
 
 			Context("when the instance does not exist", func() {
@@ -633,6 +643,16 @@ var _ = Describe("Service Broker API", func() {
 					It("returns an empty JSON object", func() {
 						response := makeUnbindingRequest(instanceID, bindingID)
 						Expect(response.Body).To(MatchJSON(`{}`))
+					})
+
+					It("contains plan_id", func() {
+						makeUnbindingRequest(instanceID, bindingID)
+						Expect(fakeServiceBroker.UnbindingDetails.PlanID).To(Equal("plan-id"))
+					})
+
+					It("contains service_id", func() {
+						makeUnbindingRequest(instanceID, bindingID)
+						Expect(fakeServiceBroker.UnbindingDetails.ServiceID).To(Equal("service-id"))
 					})
 				})
 

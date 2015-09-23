@@ -13,7 +13,7 @@ type FakeServiceBroker struct {
 	BoundBindingIDs     []string
 	BoundBindingDetails brokerapi.BindDetails
 
-	BoundUnbindingDetails brokerapi.UnbindDetails
+	UnbindingDetails brokerapi.UnbindDetails
 
 	InstanceLimit int
 
@@ -124,7 +124,7 @@ func (fakeBroker *FakeServiceBroker) Bind(instanceID, bindingID string, details 
 func (fakeBroker *FakeServiceBroker) Unbind(instanceID, bindingID string, details brokerapi.UnbindDetails) error {
 	fakeBroker.BrokerCalled = true
 
-	fakeBroker.BoundUnbindingDetails = details
+	fakeBroker.UnbindingDetails = details
 
 	if sliceContains(instanceID, fakeBroker.ProvisionedInstanceIDs) {
 		if sliceContains(bindingID, fakeBroker.BoundBindingIDs) {

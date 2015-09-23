@@ -118,8 +118,8 @@ func deprovision(serviceBroker ServiceBroker, router httpRouter, logger lager.Lo
 		})
 
 		details := DeprovisionDetails{
-			PlanID:    vars["plan_id"],
-			ServiceID: vars["service_id"],
+			PlanID:    req.FormValue("plan_id"),
+			ServiceID: req.FormValue("service_id"),
 		}
 
 		if err := serviceBroker.Deprovision(instanceID, details); err != nil {
@@ -202,8 +202,8 @@ func unbind(serviceBroker ServiceBroker, router httpRouter, logger lager.Logger)
 		})
 
 		details := UnbindDetails{
-			PlanID:    vars["plan_id"],
-			ServiceID: vars["service_id"],
+			PlanID:    req.FormValue("plan_id"),
+			ServiceID: req.FormValue("service_id"),
 		}
 
 		if err := serviceBroker.Unbind(instanceID, bindingID, details); err != nil {
