@@ -54,6 +54,7 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 	subway.Logger.Info("bind", lager.Data{
 		"instance-id": instanceID,
 		"binding-id":  bindingID,
+		"service-id":  details.ServiceID,
 		"plan-id":     details.PlanID,
 	})
 
@@ -124,6 +125,19 @@ func (subway *Broker) Unbind(instanceID, bindingID string) error {
 		"binding-id":  bindingID,
 	})
 
+	// brokerapi does not pass thru service_id/plan_id from CF;
+	// so to match the required API for some brokers, pass thru empty
+	// values
+	var details struct {
+		ServiceID string `json:"service_id"`
+		PlanID    string `json:"plan_id"`
+	}
+	buffer := &bytes.Buffer{}
+	if err := json.NewEncoder(buffer).Encode(details); err != nil {
+		subway.Logger.Error("backend-unbind-encode-details", err)
+		return err
+	}
+
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
@@ -133,7 +147,8 @@ func (subway *Broker) Unbind(instanceID, bindingID string) error {
 		} else {
 			client := &http.Client{}
 			url := fmt.Sprintf("%s/v2/service_instances/%s/service_bindings/%s", backendBroker.URI, instanceID, bindingID)
-			req, err := http.NewRequest("DELETE", url, nil)
+
+			req, err := http.NewRequest("DELETE", url, buffer)
 			if err != nil {
 				subway.Logger.Error("backend-unbind-req", err)
 				return err
