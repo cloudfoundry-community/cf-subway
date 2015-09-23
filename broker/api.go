@@ -125,12 +125,6 @@ func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.Unb
 		"binding-id":  bindingID,
 	})
 
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(details); err != nil {
-		subway.Logger.Error("backend-unbind-encode-details", err)
-		return err
-	}
-
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
@@ -139,9 +133,10 @@ func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.Unb
 			// Skip test backend broker
 		} else {
 			client := &http.Client{}
-			url := fmt.Sprintf("%s/v2/service_instances/%s/service_bindings/%s", backendBroker.URI, instanceID, bindingID)
+			url := fmt.Sprintf("%s/v2/service_instances/%s/service_bindings/%s?plan_id=%s&service_id=%s",
+				backendBroker.URI, instanceID, bindingID, details.PlanID, details.ServiceID)
 
-			req, err := http.NewRequest("DELETE", url, buffer)
+			req, err := http.NewRequest("DELETE", url, nil)
 			if err != nil {
 				subway.Logger.Error("backend-unbind-req", err)
 				return err
@@ -176,12 +171,6 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 		"instance-id": instanceID,
 	})
 
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(details); err != nil {
-		subway.Logger.Error("backend-deprovision-encode-details", err)
-		return err
-	}
-
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
@@ -190,8 +179,9 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 			// Skip test backend broker
 		} else {
 			client := &http.Client{}
-			url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
-			req, err := http.NewRequest("DELETE", url, buffer)
+			url := fmt.Sprintf("%s/v2/service_instances/%s?plan_id=%s&service_id=%s",
+				backendBroker.URI, instanceID, details.PlanID, details.ServiceID)
+			req, err := http.NewRequest("DELETE", url, nil)
 			if err != nil {
 				subway.Logger.Error("backend-deprovision-req", err)
 				return err
