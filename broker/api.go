@@ -183,6 +183,19 @@ func (subway *Broker) Deprovision(instanceID string) error {
 		"instance-id": instanceID,
 	})
 
+	// brokerapi does not pass thru service_id/plan_id from CF;
+	// so to match the required API for some brokers, pass thru empty
+	// values
+	var details struct {
+		ServiceID string `json:"service_id"`
+		PlanID    string `json:"plan_id"`
+	}
+	buffer := &bytes.Buffer{}
+	if err := json.NewEncoder(buffer).Encode(details); err != nil {
+		subway.Logger.Error("backend-deprovision-encode-details", err)
+		return err
+	}
+
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
@@ -192,9 +205,9 @@ func (subway *Broker) Deprovision(instanceID string) error {
 		} else {
 			client := &http.Client{}
 			url := fmt.Sprintf("%s/v2/service_instances/%s", backendBroker.URI, instanceID)
-			req, err := http.NewRequest("DELETE", url, nil)
+			req, err := http.NewRequest("DELETE", url, buffer)
 			if err != nil {
-				subway.Logger.Error("backend-unbind-req", err)
+				subway.Logger.Error("backend-deprovision-req", err)
 				return err
 			}
 			req.Header.Set("Content-Type", "application/json")
@@ -202,7 +215,7 @@ func (subway *Broker) Deprovision(instanceID string) error {
 
 			resp, err := client.Do(req)
 			if err != nil {
-				subway.Logger.Error("backend-unbind-resp", err)
+				subway.Logger.Error("backend-deprovision-resp", err)
 				return err
 			}
 			defer resp.Body.Close()
