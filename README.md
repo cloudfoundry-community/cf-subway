@@ -13,6 +13,7 @@ ________   ______________________>__
 Subway is a multiplexing service broker that allows you to scale out single node brokers, such as cf-containers-broker/docker-boshrelease and cf-redis-broker/cf-redis-release.
 
 -	CI pipeline https://ci.starkandwayne.com/pipelines/subway
+-	BOSH release https://github.com/cloudfoundry-community/cf-subway-boshrelease
 -	Blog post intro https://blog.starkandwayne.com/2015/09/21/how-to-scale-out-any-cloud-foundry-service/
 
 How does it work?
