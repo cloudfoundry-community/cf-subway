@@ -33,7 +33,7 @@
 			"Rev": "d6c945f9fdbf6cad99e85b0feff591caa268e0db"
 		},
 		{
-			"ImportPath": "github.com/pivotal-cf/brokerapi",
+			"ImportPath": "github.com/frodenas/brokerapi",
 			"Rev": "9f368e578ab699e755c31980dc86d9fcd6848919"
 		},
 		{

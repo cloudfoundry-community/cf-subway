@@ -3,6 +3,7 @@ package brokerapi
 type EmptyResponse struct{}
 
 type ErrorResponse struct {
+	Error       string `json:"error,omitempty"`
 	Description string `json:"description"`
 }
 
@@ -15,5 +16,11 @@ type ProvisioningResponse struct {
 }
 
 type BindingResponse struct {
-	Credentials interface{} `json:"credentials"`
+	Credentials    interface{} `json:"credentials"`
+	SyslogDrainURL string      `json:"syslog_drain_url,omitempty"`
+}
+
+type LastOperationResponse struct {
+	State       string `json:"state"`
+	Description string `json:"description,omitempty"`
 }

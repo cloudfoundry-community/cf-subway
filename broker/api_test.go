@@ -2,9 +2,9 @@ package broker_test
 
 import (
 	"github.com/cloudfoundry-community/cf-subway/broker"
+	"github.com/frodenas/brokerapi"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi"
 )
 
 var _ = Describe("Service broker", func() {
@@ -12,9 +12,11 @@ var _ = Describe("Service broker", func() {
 
 	BeforeEach(func() {
 		subway = broker.NewBroker()
-		subway.Catalog = []brokerapi.Service{
-			{
-				Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
+		subway.BackendCatalog = brokerapi.CatalogResponse{
+			Services: []brokerapi.Service{
+				{
+					Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
+				},
 			},
 		}
 		subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
@@ -24,7 +26,7 @@ var _ = Describe("Service broker", func() {
 		Context("when the plan is recognized", func() {
 			It("creates an instance if first backend ok", func() {
 				subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
-				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).ToNot(HaveOccurred())
 			})
 
@@ -36,7 +38,7 @@ var _ = Describe("Service broker", func() {
 					{URI: "TEST-SUCCESS"},
 					{URI: "TEST-NO-CAPACITY"},
 				}
-				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).ToNot(HaveOccurred())
 			})
 
@@ -45,7 +47,7 @@ var _ = Describe("Service broker", func() {
 					{URI: "TEST-NO-CAPACITY"},
 					{URI: "TEST-NO-CAPACITY"},
 				}
-				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).To(HaveOccurred())
 			})
 		})
@@ -53,7 +55,7 @@ var _ = Describe("Service broker", func() {
 		Context("when the plan is recognized but no backend brokers", func() {
 			It("creates an instance", func() {
 				subway.BackendBrokers = nil
-				err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"})
+				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).To(HaveOccurred())
 				Ω(err.Error()).To(Equal("No backend broker available for plan"))
 			})
@@ -61,7 +63,7 @@ var _ = Describe("Service broker", func() {
 
 		Context("when the plan is not recognized", func() {
 			It("creates an instance", func() {
-				err := subway.Provision("service-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"})
+				_, _, err := subway.Provision("service-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"}, false)
 				Ω(err).To(HaveOccurred())
 			})
 		})
@@ -74,11 +76,11 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			creds, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
+			bindResponse, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
 			Ω(err).ToNot(HaveOccurred())
-			Ω(creds).ToNot(BeNil())
-			credentials := creds.(map[string]interface{})
-			Ω(credentials["host"]).To(Equal("10.10.10.10"))
+			var creds map[string]interface{}
+			creds = bindResponse.Credentials.(map[string]interface{})
+			Ω(creds["host"]).To(Equal("10.10.10.10"))
 		})
 
 		It("no broker recognizes service instance", func() {
@@ -139,7 +141,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Deprovision("service-id", details)
+			_, err := subway.Deprovision("service-id", details, false)
 			Ω(err).ToNot(HaveOccurred())
 		})
 
@@ -148,7 +150,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Deprovision("service-id", details)
+			_, err := subway.Deprovision("service-id", details, false)
 			Ω(err).To(HaveOccurred())
 		})
 

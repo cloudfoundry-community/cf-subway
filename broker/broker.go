@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/frodenas/brokerapi"
 	"github.com/pivotal-golang/lager"
 	"gopkg.in/yaml.v2"
 )
 
-type Broker struct // Broker is the core struct for the Broker webapp
-{
-	Catalog        []brokerapi.Service
+// Broker is the core struct for the Broker webapp
+type Broker struct {
+	BackendCatalog brokerapi.CatalogResponse
 	BackendBrokers []*BackendBroker
 
 	Logger lager.Logger
@@ -59,16 +59,16 @@ func (subway *Broker) LoadCatalog() error {
 	if err != nil {
 		return err
 	}
-	subway.Catalog = catalogResponse.Services
+	subway.BackendCatalog = catalogResponse
 	return nil
 }
 
 func (subway *Broker) plans() []brokerapi.ServicePlan {
-	if len(subway.Catalog) == 0 {
+	if len(subway.BackendCatalog.Services) == 0 {
 		subway.LoadCatalog()
 	}
 	plans := []brokerapi.ServicePlan{}
-	for _, service := range subway.Catalog {
+	for _, service := range subway.BackendCatalog.Services {
 		for _, plan := range service.Plans {
 			plans = append(plans, plan)
 		}

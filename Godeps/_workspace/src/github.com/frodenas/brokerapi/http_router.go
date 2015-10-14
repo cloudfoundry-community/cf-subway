@@ -10,7 +10,7 @@ type httpRouter struct {
 	muxRouter *mux.Router
 }
 
-func newHttpRouter() httpRouter {
+func newHTTPRouter() httpRouter {
 	return httpRouter{
 		muxRouter: mux.NewRouter(),
 	}
@@ -26,6 +26,10 @@ func (httpRouter httpRouter) Get(url string, handler http.HandlerFunc) {
 
 func (httpRouter httpRouter) Put(url string, handler http.HandlerFunc) {
 	httpRouter.muxRouter.HandleFunc(url, handler).Methods("PUT")
+}
+
+func (httpRouter httpRouter) Patch(url string, handler http.HandlerFunc) {
+	httpRouter.muxRouter.HandleFunc(url, handler).Methods("PATCH")
 }
 
 func (httpRouter httpRouter) Delete(url string, handler http.HandlerFunc) {
