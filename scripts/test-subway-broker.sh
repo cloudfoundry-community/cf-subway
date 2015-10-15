@@ -25,4 +25,10 @@ curl -f -X PUT https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/service
 
 id=$(uuid)
 curl -f -X PUT https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/service_instances/$id -d "{\"plan_id\": \"$PLAN_ID\", \"service_id\":\"$SERVICE_ID\"}"
-curl -f -X PUT https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/service_instances/$id/service_bindings/$id -d "{\"plan_id\": \"$PLAN_ID\", \"service_id\":\"$SERVICE_ID\", \"app_guid\": \"x\"}"
+
+echo create binding to subway should be same as to backend
+subway=$(curl -f -X PUT https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/service_instances/$id/service_bindings/$id -d "{\"plan_id\": \"$PLAN_ID\", \"service_id\":\"$SERVICE_ID\", \"app_guid\": \"x\"}")
+echo $subway
+backend=$(curl -f -X PUT https://$BACKEND/v2/service_instances/$id/service_bindings/$id -d "{\"plan_id\": \"$PLAN_ID\", \"service_id\":\"$SERVICE_ID\", \"app_guid\": \"x\"}")
+echo $backend
+[[ $subway == $backend ]]
