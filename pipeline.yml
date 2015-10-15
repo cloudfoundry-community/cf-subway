@@ -15,36 +15,63 @@ jobs:
     trigger: true
     passed: [subway]
   - do:
-    - get: haash-broker
-    - task: build-backend-broker
-      file: cf-subway/scripts/build-backend-broker.yml
     - aggregate:
-      - put: haash-broker-1
-        params:
-          manifest: cf-subway/scripts/cfmanifests/haash-broker-1.yml
-          path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
-          current_app_name: haash-broker-1
-      - put: haash-broker-2
-        params:
-          manifest: cf-subway/scripts/cfmanifests/haash-broker-2.yml
-          path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
-          current_app_name: haash-broker-2
-      - put: subway-broker
-        params:
-          manifest: cf-subway/manifest.yml
-          path: cf-subway
-          current_app_name: subway-broker
-          environment_variables:
-            SUBWAY_USERNAME: secretusername
-            SUBWAY_PASSWORD: secretpassword
-            BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io
-            BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
-    - task: test-subway-broker
-      file: cf-subway/scripts/test-subway-broker.yml
-      config:
-        params:
-          SUBWAY_USERNAME: secretusername
-          SUBWAY_PASSWORD: secretpassword
+      - do:
+        - get: haash-broker
+        - task: build-backend-broker
+          file: cf-subway/scripts/build-backend-broker.yml
+        - aggregate:
+          - put: haash-broker-1
+            params:
+              manifest: cf-subway/scripts/cfmanifests/haash-broker-1.yml
+              path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
+              current_app_name: haash-broker-1
+          - put: haash-broker-2
+            params:
+              manifest: cf-subway/scripts/cfmanifests/haash-broker-2.yml
+              path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
+              current_app_name: haash-broker-2
+          - put: subway-broker
+            params:
+              manifest: cf-subway/manifest.yml
+              path: cf-subway
+              current_app_name: subway-broker-simple
+              environment_variables:
+                SUBWAY_USERNAME: secretusername
+                SUBWAY_PASSWORD: secretpassword
+                BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io
+                BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
+        - task: test-subway-broker
+          file: cf-subway/scripts/test-subway-broker.yml
+          config:
+            params:
+              SUBWAY_HOST: subway-broker-simple.cfapps.io
+              SUBWAY_USERNAME: secretusername
+              SUBWAY_PASSWORD: secretpassword
+      - do:
+        - get: worlds-simplest-service-broker
+        - aggregate:
+          - put: syslog-broker
+            params:
+              manifest: cf-subway/scripts/cfmanifests/syslog-broker.yml
+              path: worlds-simplest-service-broker
+              current_app_name: syslog-broker
+          - put: subway-broker
+            params:
+              manifest: cf-subway/manifest.yml
+              path: cf-subway
+              current_app_name: subway-broker-syslog
+              environment_variables:
+                SUBWAY_USERNAME: secretusername
+                SUBWAY_PASSWORD: secretpassword
+                BACKEND_BROKER_1: https://warreng:natedogg@syslog-broker.cfapps.io
+        - task: test-subway-broker
+          file: cf-subway/scripts/test-subway-broker.yml
+          config:
+            params:
+              SUBWAY_HOST: subway-broker-syslog.cfapps.io
+              SUBWAY_USERNAME: secretusername
+              SUBWAY_PASSWORD: secretpassword
 
     ensure:
       task: stop-backend-brokers
@@ -64,6 +91,12 @@ resources:
   source:
     uri: https://github.com/cloudfoundry-community/cf-subway.git
     branch: {{branch}}
+
+- name: worlds-simplest-service-broker
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry-community/worlds-simplest-service-broker.git
+    branch: master
 
 - name: haash-broker
   type: git
