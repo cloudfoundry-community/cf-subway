@@ -49,6 +49,8 @@ jobs:
             SUBWAY_HOST: subway-broker-simple.cfapps.io
             SUBWAY_USERNAME: secretusername
             SUBWAY_PASSWORD: secretpassword
+            SERVICE_ID: 1
+            PLAN_ID: 1
     - do:
       - aggregate:
         - put: worlds-simplest-syslog-broker
@@ -72,6 +74,8 @@ jobs:
             SUBWAY_HOST: subway-syslog-broker.cfapps.io
             SUBWAY_USERNAME: secretusername
             SUBWAY_PASSWORD: secretpassword
+            SERVICE_ID: 1-service-my-syslog
+            PLAN_ID: 1-plan-shared
 
     ensure:
       task: stop-backend-brokers
