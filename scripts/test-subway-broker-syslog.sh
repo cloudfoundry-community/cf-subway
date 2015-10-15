@@ -10,8 +10,11 @@ SUBWAY_HOST=${SUBWAY_HOST}
 sudo apt-get update
 sudo apt-get install curl uuid -y
 
-curl -f -X GET https://$BACKEND/v2/catalog
-curl -f -X GET https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/catalog
+backend_catalog=$(curl -f -X GET https://$BACKEND/v2/catalog)
+echo $backend_catalog
+subway_catalog=$(curl -f -X GET https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/catalog)
+echo $subway_catalog
+[[ ${subway_catalog} == ${backend_catalog} ]] || exit 1
 
 id=$(uuid)
 curl -f -X PUT https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/service_instances/$id -d "{\"plan_id\": \"$PLAN_ID\", \"service_id\":\"$SERVICE_ID\"}"
