@@ -105,7 +105,9 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 					return bindResp, err
 				}
 				// HACK for some reason WeakDecode doesn't parse "syslog_drain_url" into .SyslogDrainURL
-				bindResp.SyslogDrainURL = rawBindingResponse["syslog_drain_url"].(string)
+				if rawBindingResponse["syslog_drain_url"] != nil {
+					bindResp.SyslogDrainURL = rawBindingResponse["syslog_drain_url"].(string)
+				}
 				if err == nil {
 					subway.Logger.Info("bind-success", lager.Data{
 						"instance-id": instanceID,
