@@ -10,7 +10,7 @@ SUBWAY_HOST=${SUBWAY_HOST}
 sudo apt-get update
 sudo apt-get install curl uuid -y
 
-curl -f -X GET https://warreng:natedogg@haash-broker-1.cfapps.io/v2/catalog
+curl -f -X GET https://$BACKEND/v2/catalog
 curl -f -X GET https://$SUBWAY_USERNAME:$SUBWAY_PASSWORD@$SUBWAY_HOST/v2/catalog
 
 id=$(uuid)
