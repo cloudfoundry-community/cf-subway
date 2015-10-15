@@ -100,9 +100,12 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 				if err = json.Unmarshal(jsonData, &rawBindingResponse); err != nil {
 					return bindResp, err
 				}
+				fmt.Printf("%#v\n", rawBindingResponse)
 				if err = mapstructure.WeakDecode(rawBindingResponse, &bindResp); err != nil {
 					return bindResp, err
 				}
+				// HACK for some reason WeakDecode doesn't parse "syslog_drain_url" into .SyslogDrainURL
+				bindResp.SyslogDrainURL = rawBindingResponse["syslog_drain_url"].(string)
 				if err == nil {
 					subway.Logger.Info("bind-success", lager.Data{
 						"instance-id": instanceID,
@@ -110,6 +113,7 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 						"plan-id":     details.PlanID,
 						"backend-uri": backendBroker.URI,
 					})
+					fmt.Printf("%#v\n", bindResp)
 					return bindResp, nil
 				}
 			}
