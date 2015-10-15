@@ -114,6 +114,16 @@ resources:
     organization: {{cf-org}}
     space: {{cf-space}}
 
+- name: syslog-broker
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    skip_cert_check: false
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
+
 - name: haash-broker-1
   type: cf
   source:
