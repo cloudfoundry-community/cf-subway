@@ -1,6 +1,6 @@
 ---
 applications:
-- name: syslog-broker
+- name: worlds-simplest-syslog-broker
   memory: 128M
   path: .
   env:

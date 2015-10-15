@@ -34,7 +34,7 @@ jobs:
             current_app_name: haash-broker-2
         - put: subway-broker-simple
           params:
-            manifest: cf-subway/manifest.yml
+            manifest: cf-subway/scripts/cfmanifests/subway-broker-simple.yml
             path: cf-subway
             current_app_name: subway-broker-simple
             environment_variables:
@@ -53,12 +53,12 @@ jobs:
       - aggregate:
         - put: worlds-simplest-syslog-broker
           params:
-            manifest: cf-subway/scripts/cfmanifests/syslog-broker.yml
+            manifest: cf-subway/scripts/cfmanifests/worlds-simplest-syslog-broker.yml
             path: worlds-simplest-service-broker
             current_app_name: worlds-simplest-syslog-broker
         - put: subway-syslog-broker
           params:
-            manifest: cf-subway/manifest.yml
+            manifest: cf-subway/scripts/cfmanifests/subway-syslog-broker.yml
             path: cf-subway
             current_app_name: subway-syslog-broker
             environment_variables:
