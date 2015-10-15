@@ -9,25 +9,25 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/frodenas/brokerapi"
 	"github.com/mitchellh/mapstructure"
-	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal-golang/lager"
 )
 
 // Services is used by Cloud Foundry to learn the available catalog of services
-func (subway *Broker) Services() []brokerapi.Service {
+func (subway *Broker) Services() brokerapi.CatalogResponse {
 	err := subway.LoadCatalog()
 	if err != nil {
 		subway.Logger.Error("catalog", err)
 	}
 
-	return subway.Catalog
+	return subway.BackendCatalog
 }
 
 // Provision requests the creation of a service instance from an available sub-broker
-func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDetails) error {
+func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDetails, acceptsIncomplete bool) (resp brokerapi.ProvisioningResponse, doesAcceptIncomplete bool, err error) {
 	if details.PlanID == "" {
-		return errors.New("plan_id required")
+		return resp, false, errors.New("plan_id required")
 	}
 
 	planID := ""
@@ -39,18 +39,20 @@ func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDe
 	}
 
 	if planID == "" {
-		return errors.New("plan_id not recognized")
+		return resp, false, errors.New("plan_id not recognized")
 	}
 
-	return subway.routeProvision(instanceID, details)
+	err = subway.routeProvision(instanceID, details)
+	return resp, false, err
 }
 
-type bindingResponse struct {
-	Credentials map[string]interface{} `json:"credentials"`
+// Update service instance
+func (subway *Broker) Update(instanceID string, details brokerapi.UpdateDetails, acceptsIncomplete bool) (doesAcceptIncomplete bool, err error) {
+	return false, fmt.Errorf("Update not supported yet")
 }
 
 // Bind requests the creation of a service instance bindings from associated sub-broker
-func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindDetails) (interface{}, error) {
+func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindDetails) (bindResp brokerapi.BindingResponse, err error) {
 	subway.Logger.Info("bind", lager.Data{
 		"instance-id": instanceID,
 		"binding-id":  bindingID,
@@ -58,12 +60,11 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 		"plan-id":     details.PlanID,
 	})
 
-	bindingResponse := bindingResponse{}
-
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
-			return map[string]interface{}{"host": "10.10.10.10"}, nil
+			bindResp.Credentials = map[string]interface{}{"host": "10.10.10.10"}
+			return bindResp, nil
 		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
 			// Skip test backend broker
 		} else {
@@ -72,12 +73,12 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 			buffer := &bytes.Buffer{}
 			if err := json.NewEncoder(buffer).Encode(details); err != nil {
 				subway.Logger.Error("backend-bind-encode-details", err)
-				return bindingResponse.Credentials, err
+				return bindResp, err
 			}
 			req, err := http.NewRequest("PUT", url, buffer)
 			if err != nil {
 				subway.Logger.Error("backend-bind-req", err)
-				return bindingResponse.Credentials, err
+				return bindResp, err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
@@ -86,7 +87,7 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 			resp, err := client.Do(req)
 			if err != nil {
 				subway.Logger.Error("backend-bind-resp", err)
-				return bindingResponse.Credentials, err
+				return bindResp, err
 			}
 			defer resp.Body.Close()
 
@@ -97,10 +98,15 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 
 				rawBindingResponse := map[string]interface{}{}
 				if err = json.Unmarshal(jsonData, &rawBindingResponse); err != nil {
-					return bindingResponse.Credentials, err
+					return bindResp, err
 				}
-				if err = mapstructure.WeakDecode(rawBindingResponse, &bindingResponse); err != nil {
-					return bindingResponse.Credentials, err
+				fmt.Printf("%#v\n", rawBindingResponse)
+				if err = mapstructure.WeakDecode(rawBindingResponse, &bindResp); err != nil {
+					return bindResp, err
+				}
+				// HACK for some reason WeakDecode doesn't parse "syslog_drain_url" into .SyslogDrainURL
+				if rawBindingResponse["syslog_drain_url"] != nil {
+					bindResp.SyslogDrainURL = rawBindingResponse["syslog_drain_url"].(string)
 				}
 				if err == nil {
 					subway.Logger.Info("bind-success", lager.Data{
@@ -109,13 +115,14 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 						"plan-id":     details.PlanID,
 						"backend-uri": backendBroker.URI,
 					})
-					return bindingResponse.Credentials, nil
+					fmt.Printf("%#v\n", bindResp)
+					return bindResp, nil
 				}
 			}
 		}
 	}
 
-	return bindingResponse.Credentials, brokerapi.ErrInstanceDoesNotExist
+	return bindResp, brokerapi.ErrInstanceDoesNotExist
 }
 
 // Unbind requests the destructions of a service instance binding from associated sub-broker
@@ -166,7 +173,7 @@ func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.Unb
 }
 
 // Deprovision requests the destruction of a service instance from associated sub-broker
-func (subway *Broker) Deprovision(instanceID string, details brokerapi.DeprovisionDetails) error {
+func (subway *Broker) Deprovision(instanceID string, details brokerapi.DeprovisionDetails, acceptsIncomplete bool) (doesAcceptIncomplete bool, err error) {
 	subway.Logger.Info("deprovision", lager.Data{
 		"instance-id": instanceID,
 	})
@@ -174,7 +181,7 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
-			return nil
+			return false, nil
 		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
 			// Skip test backend broker
 		} else {
@@ -184,7 +191,7 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 			req, err := http.NewRequest("DELETE", url, nil)
 			if err != nil {
 				subway.Logger.Error("backend-deprovision-req", err)
-				return err
+				return acceptsIncomplete, err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
@@ -192,7 +199,7 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 			resp, err := client.Do(req)
 			if err != nil {
 				subway.Logger.Error("backend-deprovision-resp", err)
-				return err
+				return false, err
 			}
 			defer resp.Body.Close()
 
@@ -201,10 +208,15 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 					"instance-id": instanceID,
 					"backend-uri": backendBroker.URI,
 				})
-				return nil
+				return false, nil
 			}
 		}
 	}
 
-	return brokerapi.ErrInstanceDoesNotExist
+	return false, brokerapi.ErrInstanceDoesNotExist
+}
+
+// LastOperation returns the status of the last instance operation
+func (subway *Broker) LastOperation(instanceID string) (resp brokerapi.LastOperationResponse, err error) {
+	return resp, fmt.Errorf("Async not supported yet")
 }

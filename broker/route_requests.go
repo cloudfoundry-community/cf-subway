@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/frodenas/brokerapi"
 	"github.com/pivotal-golang/lager"
 )
 

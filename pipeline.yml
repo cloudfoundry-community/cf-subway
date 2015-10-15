@@ -11,40 +11,73 @@ jobs:
   serial: true
   public: true
   plan:
-  - get: cf-subway
-    trigger: true
-    passed: [subway]
-  - do:
+  - aggregate:
+    - get: cf-subway
+      trigger: true
+      passed: [subway]
+    - get: worlds-simplest-service-broker
     - get: haash-broker
-    - task: build-backend-broker
-      file: cf-subway/scripts/build-backend-broker.yml
-    - aggregate:
-      - put: haash-broker-1
-        params:
-          manifest: cf-subway/scripts/cfmanifests/haash-broker-1.yml
-          path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
-          current_app_name: haash-broker-1
-      - put: haash-broker-2
-        params:
-          manifest: cf-subway/scripts/cfmanifests/haash-broker-2.yml
-          path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
-          current_app_name: haash-broker-2
-      - put: subway-broker
-        params:
-          manifest: cf-subway/manifest.yml
-          path: cf-subway
-          current_app_name: subway-broker
-          environment_variables:
+  - aggregate:
+    - do:
+      - task: build-backend-broker
+        file: cf-subway/scripts/build-backend-broker.yml
+      - aggregate:
+        - put: haash-broker-1
+          params:
+            manifest: cf-subway/scripts/cfmanifests/haash-broker-1.yml
+            path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
+            current_app_name: haash-broker-1
+        - put: haash-broker-2
+          params:
+            manifest: cf-subway/scripts/cfmanifests/haash-broker-2.yml
+            path: build-backend-broker/haash-broker/build/libs/haash-broker-0.0.1-SNAPSHOT.jar
+            current_app_name: haash-broker-2
+        - put: subway-broker-simple
+          params:
+            manifest: cf-subway/scripts/cfmanifests/subway-broker-simple.yml
+            path: cf-subway
+            current_app_name: subway-broker-simple
+            environment_variables:
+              SUBWAY_USERNAME: secretusername
+              SUBWAY_PASSWORD: secretpassword
+              BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io
+              BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
+      - task: test-subway-broker
+        file: cf-subway/scripts/test-subway-broker-simple.yml
+        config:
+          params:
+            SUBWAY_HOST: subway-broker-simple.cfapps.io
             SUBWAY_USERNAME: secretusername
             SUBWAY_PASSWORD: secretpassword
-            BACKEND_BROKER_1: https://warreng:natedogg@haash-broker-1.cfapps.io
-            BACKEND_BROKER_2: https://warreng:natedogg@haash-broker-2.cfapps.io
-    - task: test-subway-broker
-      file: cf-subway/scripts/test-subway-broker.yml
-      config:
-        params:
-          SUBWAY_USERNAME: secretusername
-          SUBWAY_PASSWORD: secretpassword
+            SERVICE_ID: 1
+            PLAN_ID: 1
+            BACKEND: warreng:natedogg@haash-broker-1.cfapps.io
+    - do:
+      - aggregate:
+        - put: worlds-simplest-syslog-broker
+          params:
+            manifest: cf-subway/scripts/cfmanifests/worlds-simplest-syslog-broker.yml
+            path: worlds-simplest-service-broker
+            current_app_name: worlds-simplest-syslog-broker
+        - put: subway-syslog-broker
+          params:
+            manifest: cf-subway/scripts/cfmanifests/subway-syslog-broker.yml
+            path: cf-subway
+            current_app_name: subway-syslog-broker
+            environment_variables:
+              SUBWAY_USERNAME: secretusername
+              SUBWAY_PASSWORD: secretpassword
+              BACKEND_BROKER_1: https://warreng:natedogg@worlds-simplest-syslog-broker.cfapps.io
+      - task: test-subway-broker
+        file: cf-subway/scripts/test-subway-broker-syslog.yml
+        config:
+          params:
+            SUBWAY_HOST: subway-syslog-broker.cfapps.io
+            SUBWAY_USERNAME: secretusername
+            SUBWAY_PASSWORD: secretpassword
+            SERVICE_ID: 1-service-my-syslog
+            PLAN_ID: 1-plan-shared
+            BACKEND: warreng:natedogg@worlds-simplest-syslog-broker.cfapps.io
 
     ensure:
       task: stop-backend-brokers
@@ -63,6 +96,12 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry-community/cf-subway.git
+    branch: {{branch}}
+
+- name: worlds-simplest-service-broker
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry-community/worlds-simplest-service-broker.git
     branch: master
 
 - name: haash-broker
@@ -71,7 +110,27 @@ resources:
     uri: https://github.com/drnic/haash-broker.git
     branch: parameters
 
-- name: subway-broker
+- name: subway-broker-simple
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    skip_cert_check: false
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
+
+- name: subway-syslog-broker
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    skip_cert_check: false
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
+
+- name: worlds-simplest-syslog-broker
   type: cf
   source:
     api: https://api.run.pivotal.io

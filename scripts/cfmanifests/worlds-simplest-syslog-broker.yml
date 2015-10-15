@@ -1,0 +1,12 @@
+---
+applications:
+- name: worlds-simplest-syslog-broker
+  memory: 128M
+  path: .
+  env:
+    BASE_GUID: 1
+    CREDENTIALS: '{"port": "4000", "host": "1.2.3.4"}'
+    SERVICE_NAME: my-syslog
+    SERVICE_PLAN_NAME: shared
+    TAGS: syslog
+    SYSLOG_DRAIN_URL: syslog://1.2.3.4:514

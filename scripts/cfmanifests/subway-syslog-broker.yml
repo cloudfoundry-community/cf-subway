@@ -1,0 +1,4 @@
+---
+applications:
+- name: subway-syslog-broker
+  memory: 128M
