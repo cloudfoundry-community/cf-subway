@@ -22,6 +22,13 @@ var _ = Describe("Service broker", func() {
 		subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
 	})
 
+	Describe(".Services", func() {
+		It("returns service catalog", func() {
+			catalog := subway.Services()
+			Ω(len(catalog.Services)).To(Equal(1))
+		})
+	})
+
 	Describe(".Provision", func() {
 		Context("when the plan is recognized", func() {
 			It("creates an instance if first backend ok", func() {
