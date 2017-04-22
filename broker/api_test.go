@@ -1,10 +1,12 @@
 package broker_test
 
 import (
+	"context"
+
 	"github.com/cloudfoundry-community/cf-subway/broker"
-	"github.com/frodenas/brokerapi"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi"
 )
 
 var _ = Describe("Service broker", func() {
@@ -12,16 +14,14 @@ var _ = Describe("Service broker", func() {
 
 	BeforeEach(func() {
 		subway = broker.NewBroker()
-		subway.BackendCatalog = brokerapi.CatalogResponse{
-			Services: []brokerapi.Service{
-				{
-					ID: "service1-id",
-					Metadata: &brokerapi.ServiceMetadata{
-						LongDescription: "long description",
-						ImageURL:        "image.png",
-					},
-					Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
+		subway.BackendCatalog = []brokerapi.Service{
+			brokerapi.Service{
+				ID: "service1-id",
+				Metadata: &brokerapi.ServiceMetadata{
+					LongDescription: "long description",
+					ImageUrl:        "image.png",
 				},
+				Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
 			},
 		}
 		subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
@@ -29,12 +29,12 @@ var _ = Describe("Service broker", func() {
 
 	Describe(".Services", func() {
 		It("returns service catalog", func() {
-			catalog := subway.Services()
-			Ω(len(catalog.Services)).To(Equal(1))
-			service := catalog.Services[0]
+			services := subway.Services(context.Background())
+			Ω(len(services)).To(Equal(1))
+			service := services[0]
 			Ω(service.ID).To(Equal("service1-id"))
 			Ω(service.Metadata.LongDescription).To(Equal("long description"))
-			Ω(service.Metadata.ImageURL).To(Equal("image.png"))
+			Ω(service.Metadata.ImageUrl).To(Equal("image.png"))
 		})
 	})
 
@@ -42,7 +42,7 @@ var _ = Describe("Service broker", func() {
 		Context("when the plan is recognized", func() {
 			It("creates an instance if first backend ok", func() {
 				subway.BackendBrokers = []*broker.BackendBroker{{URI: "TEST-SUCCESS"}}
-				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
+				_, err := subway.Provision(context.Background(), "some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).ToNot(HaveOccurred())
 			})
 
@@ -54,7 +54,7 @@ var _ = Describe("Service broker", func() {
 					{URI: "TEST-SUCCESS"},
 					{URI: "TEST-NO-CAPACITY"},
 				}
-				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
+				_, err := subway.Provision(context.Background(), "some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).ToNot(HaveOccurred())
 			})
 
@@ -63,7 +63,7 @@ var _ = Describe("Service broker", func() {
 					{URI: "TEST-NO-CAPACITY"},
 					{URI: "TEST-NO-CAPACITY"},
 				}
-				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
+				_, err := subway.Provision(context.Background(), "some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).To(HaveOccurred())
 			})
 		})
@@ -71,7 +71,7 @@ var _ = Describe("Service broker", func() {
 		Context("when the plan is recognized but no backend brokers", func() {
 			It("creates an instance", func() {
 				subway.BackendBrokers = nil
-				_, _, err := subway.Provision("some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
+				_, err := subway.Provision(context.Background(), "some-id", brokerapi.ProvisionDetails{PlanID: "plan-uuid"}, false)
 				Ω(err).To(HaveOccurred())
 				Ω(err.Error()).To(Equal("No backend broker available for plan"))
 			})
@@ -79,7 +79,7 @@ var _ = Describe("Service broker", func() {
 
 		Context("when the plan is not recognized", func() {
 			It("creates an instance", func() {
-				_, _, err := subway.Provision("service-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"}, false)
+				_, err := subway.Provision(context.Background(), "service-id", brokerapi.ProvisionDetails{PlanID: "unknown-uuid"}, false)
 				Ω(err).To(HaveOccurred())
 			})
 		})
@@ -92,7 +92,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			bindResponse, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
+			bindResponse, err := subway.Bind(context.Background(), "service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
 			Ω(err).ToNot(HaveOccurred())
 			var creds map[string]interface{}
 			creds = bindResponse.Credentials.(map[string]interface{})
@@ -104,7 +104,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			_, err := subway.Bind("service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
+			_, err := subway.Bind(context.Background(), "service-id", "bind-id", brokerapi.BindDetails{PlanID: "plan-uuid"})
 			Ω(err).To(HaveOccurred())
 		})
 
@@ -126,7 +126,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Unbind("service-id", "bind-id", details)
+			err := subway.Unbind(context.Background(), "service-id", "bind-id", details)
 			Ω(err).ToNot(HaveOccurred())
 		})
 
@@ -135,7 +135,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			err := subway.Unbind("service-id", "bind-id", details)
+			err := subway.Unbind(context.Background(), "service-id", "bind-id", details)
 			Ω(err).To(HaveOccurred())
 		})
 
@@ -157,7 +157,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-FOUND-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			_, err := subway.Deprovision("service-id", details, false)
+			_, err := subway.Deprovision(context.Background(), "service-id", details, false)
 			Ω(err).ToNot(HaveOccurred())
 		})
 
@@ -166,7 +166,7 @@ var _ = Describe("Service broker", func() {
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 				{URI: "TEST-UNKNOWN-INSTANCE"},
 			}
-			_, err := subway.Deprovision("service-id", details, false)
+			_, err := subway.Deprovision(context.Background(), "service-id", details, false)
 			Ω(err).To(HaveOccurred())
 		})
 

@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/frodenas/brokerapi"
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi"
 	"gopkg.in/yaml.v2"
 )
 
 // Broker is the core struct for the Broker webapp
 type Broker struct {
-	BackendCatalog brokerapi.CatalogResponse
+	BackendCatalog []brokerapi.Service
 	BackendBrokers []*BackendBroker
 
 	Logger lager.Logger
@@ -53,22 +53,25 @@ func (subway *Broker) LoadCatalog() error {
 	defer resp.Body.Close()
 
 	jsonData, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 
 	catalogResponse := brokerapi.CatalogResponse{}
 	err = yaml.Unmarshal(jsonData, &catalogResponse)
 	if err != nil {
 		return err
 	}
-	subway.BackendCatalog = catalogResponse
+	subway.BackendCatalog = catalogResponse.Services
 	return nil
 }
 
 func (subway *Broker) plans() []brokerapi.ServicePlan {
-	if len(subway.BackendCatalog.Services) == 0 {
+	if len(subway.BackendCatalog) == 0 {
 		subway.LoadCatalog()
 	}
 	plans := []brokerapi.ServicePlan{}
-	for _, service := range subway.BackendCatalog.Services {
+	for _, service := range subway.BackendCatalog {
 		for _, plan := range service.Plans {
 			plans = append(plans, plan)
 		}

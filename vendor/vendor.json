@@ -9,12 +9,6 @@
 			"revisionTime": "2017-03-29T01:35:17Z"
 		},
 		{
-			"checksumSHA1": "KcWn8tpMrYMswaDX4vFSSJcK418=",
-			"path": "github.com/frodenas/brokerapi",
-			"revision": "ac1ed76a08954bbd7b40a8794738539404a84313",
-			"revisionTime": "2015-10-22T02:46:46Z"
-		},
-		{
 			"checksumSHA1": "ReI++fCJwuomAaQF0rC63bhRfOM=",
 			"path": "github.com/frodenas/brokerapi/auth",
 			"revision": "ac1ed76a08954bbd7b40a8794738539404a84313",
@@ -207,10 +201,10 @@
 			"revisionTime": "2016-02-22T03:12:34Z"
 		},
 		{
-			"checksumSHA1": "x8vUU+B8SayhUWxirNbUjq7Hlns=",
-			"path": "github.com/pivotal-golang/lager",
-			"revision": "7639e31ce6622c55c15aa64144b85d5f4873d127",
-			"revisionTime": "2016-03-11T18:00:00Z"
+			"checksumSHA1": "ghXj28mewHVOQRu0QrAbZqCcUoQ=",
+			"path": "github.com/pivotal-cf/brokerapi",
+			"revision": "8f25c50c2794f9401a0162e260801e877ea3d002",
+			"revisionTime": "2017-03-07T17:23:50Z"
 		},
 		{
 			"checksumSHA1": "fALlQNY1fM99NesfLJ50KguWsio=",

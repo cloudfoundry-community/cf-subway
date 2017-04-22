@@ -2,6 +2,7 @@ package broker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,13 +10,18 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/frodenas/brokerapi"
+	"code.cloudfoundry.org/lager"
 	"github.com/mitchellh/mapstructure"
-	"github.com/pivotal-golang/lager"
+	"github.com/pivotal-cf/brokerapi"
+)
+
+const (
+	testFoundInstance   = "TEST-FOUND-INSTANCE"
+	testUnknownInstance = "TEST-UNKNOWN-INSTANCE"
 )
 
 // Services is used by Cloud Foundry to learn the available catalog of services
-func (subway *Broker) Services() brokerapi.CatalogResponse {
+func (subway *Broker) Services(ctx context.Context) []brokerapi.Service {
 	err := subway.LoadCatalog()
 	if err != nil {
 		subway.Logger.Error("catalog", err)
@@ -25,9 +31,9 @@ func (subway *Broker) Services() brokerapi.CatalogResponse {
 }
 
 // Provision requests the creation of a service instance from an available sub-broker
-func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDetails, acceptsIncomplete bool) (resp brokerapi.ProvisioningResponse, doesAcceptIncomplete bool, err error) {
+func (subway *Broker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, acceptsIncomplete bool) (resp brokerapi.ProvisionedServiceSpec, err error) {
 	if details.PlanID == "" {
-		return resp, false, errors.New("plan_id required")
+		return resp, errors.New("plan_id required")
 	}
 
 	planID := ""
@@ -39,20 +45,20 @@ func (subway *Broker) Provision(instanceID string, details brokerapi.ProvisionDe
 	}
 
 	if planID == "" {
-		return resp, false, errors.New("plan_id not recognized")
+		return resp, errors.New("plan_id not recognized")
 	}
 
 	err = subway.routeProvision(instanceID, details)
-	return resp, false, err
+	return resp, err
 }
 
 // Update service instance
-func (subway *Broker) Update(instanceID string, details brokerapi.UpdateDetails, acceptsIncomplete bool) (doesAcceptIncomplete bool, err error) {
-	return false, fmt.Errorf("Update not supported yet")
+func (subway *Broker) Update(ctx context.Context, instanceID string, details brokerapi.UpdateDetails, acceptsIncomplete bool) (resp brokerapi.UpdateServiceSpec, err error) {
+	return resp, fmt.Errorf("Update not supported yet")
 }
 
 // Bind requests the creation of a service instance bindings from associated sub-broker
-func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindDetails) (bindResp brokerapi.BindingResponse, err error) {
+func (subway *Broker) Bind(ctx context.Context, instanceID, bindingID string, details brokerapi.BindDetails) (bindResp brokerapi.Binding, err error) {
 	subway.Logger.Info("bind", lager.Data{
 		"instance-id": instanceID,
 		"binding-id":  bindingID,
@@ -62,10 +68,10 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
-		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
+		if backendBroker.URI == testFoundInstance {
 			bindResp.Credentials = map[string]interface{}{"host": "10.10.10.10"}
 			return bindResp, nil
-		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
+		} else if backendBroker.URI == testUnknownInstance {
 			// Skip test backend broker
 		} else {
 			client := &http.Client{}
@@ -95,6 +101,9 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 
 			if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
 				jsonData, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					return bindResp, err
+				}
 
 				rawBindingResponse := map[string]interface{}{}
 				if err = json.Unmarshal(jsonData, &rawBindingResponse); err != nil {
@@ -126,7 +135,7 @@ func (subway *Broker) Bind(instanceID, bindingID string, details brokerapi.BindD
 }
 
 // Unbind requests the destructions of a service instance binding from associated sub-broker
-func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.UnbindDetails) error {
+func (subway *Broker) Unbind(ctx context.Context, instanceID, bindingID string, details brokerapi.UnbindDetails) error {
 	subway.Logger.Info("unbind", lager.Data{
 		"instance-id": instanceID,
 		"binding-id":  bindingID,
@@ -134,9 +143,9 @@ func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.Unb
 
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
-		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
+		if backendBroker.URI == testFoundInstance {
 			return nil
-		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
+		} else if backendBroker.URI == testUnknownInstance {
 			// Skip test backend broker
 		} else {
 			client := &http.Client{}
@@ -173,7 +182,7 @@ func (subway *Broker) Unbind(instanceID, bindingID string, details brokerapi.Unb
 }
 
 // Deprovision requests the destruction of a service instance from associated sub-broker
-func (subway *Broker) Deprovision(instanceID string, details brokerapi.DeprovisionDetails, acceptsIncomplete bool) (doesAcceptIncomplete bool, err error) {
+func (subway *Broker) Deprovision(ctx context.Context, instanceID string, details brokerapi.DeprovisionDetails, acceptsIncomplete bool) (deprovResp brokerapi.DeprovisionServiceSpec, err error) {
 	subway.Logger.Info("deprovision", lager.Data{
 		"instance-id": instanceID,
 	})
@@ -181,7 +190,7 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 	for _, backendBroker := range subway.BackendBrokers {
 		// Dummy URI to generate test results
 		if backendBroker.URI == "TEST-FOUND-INSTANCE" {
-			return false, nil
+			return deprovResp, nil
 		} else if backendBroker.URI == "TEST-UNKNOWN-INSTANCE" {
 			// Skip test backend broker
 		} else {
@@ -191,7 +200,8 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 			req, err := http.NewRequest("DELETE", url, nil)
 			if err != nil {
 				subway.Logger.Error("backend-deprovision-req", err)
-				return acceptsIncomplete, err
+				deprovResp.IsAsync = acceptsIncomplete
+				return deprovResp, err
 			}
 			req.Header.Set("Content-Type", "application/json")
 			req.SetBasicAuth(backendBroker.Username, backendBroker.Password)
@@ -199,7 +209,7 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 			resp, err := client.Do(req)
 			if err != nil {
 				subway.Logger.Error("backend-deprovision-resp", err)
-				return false, err
+				return deprovResp, err
 			}
 			defer resp.Body.Close()
 
@@ -208,15 +218,14 @@ func (subway *Broker) Deprovision(instanceID string, details brokerapi.Deprovisi
 					"instance-id": instanceID,
 					"backend-uri": backendBroker.URI,
 				})
-				return false, nil
+				return deprovResp, nil
 			}
 		}
 	}
-
-	return false, brokerapi.ErrInstanceDoesNotExist
+	return deprovResp, brokerapi.ErrInstanceDoesNotExist
 }
 
 // LastOperation returns the status of the last instance operation
-func (subway *Broker) LastOperation(instanceID string) (resp brokerapi.LastOperationResponse, err error) {
+func (subway *Broker) LastOperation(ctx context.Context, instanceID, operationData string) (resp brokerapi.LastOperation, err error) {
 	return resp, fmt.Errorf("Async not supported yet")
 }

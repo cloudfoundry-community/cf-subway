@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 )
 
 // BackendBroker describes the location/creds for a backend broker providing actual services

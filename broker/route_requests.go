@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/frodenas/brokerapi"
-	"github.com/pivotal-golang/lager"
+	"github.com/pivotal-cf/brokerapi"
+	"code.cloudfoundry.org/lager"
 )
 
 func (subway *Broker) routeProvision(instanceID string, details brokerapi.ProvisionDetails) (err error) {
