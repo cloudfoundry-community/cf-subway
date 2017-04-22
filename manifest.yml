@@ -2,4 +2,4 @@
 applications:
 - name: subway-broker
   memory: 128M
-
+  buildpack: go_buildpack
