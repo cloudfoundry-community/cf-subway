@@ -7,4 +7,4 @@ inputs:
   path: gopath/src/github.com/cloudfoundry-community/cf-subway
 
 run:
-  path: gopath/src/github.com/cloudfoundry-community/cf-subway/scripts/test.sh
+  path: gopath/src/github.com/cloudfoundry-community/cf-subway/ci/scripts/test.sh
