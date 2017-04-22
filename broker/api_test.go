@@ -15,6 +15,11 @@ var _ = Describe("Service broker", func() {
 		subway.BackendCatalog = brokerapi.CatalogResponse{
 			Services: []brokerapi.Service{
 				{
+					ID: "service1-id",
+					Metadata: &brokerapi.ServiceMetadata{
+						LongDescription: "long description",
+						ImageURL:        "image.png",
+					},
 					Plans: []brokerapi.ServicePlan{{ID: "plan-uuid"}},
 				},
 			},
@@ -26,6 +31,10 @@ var _ = Describe("Service broker", func() {
 		It("returns service catalog", func() {
 			catalog := subway.Services()
 			Ω(len(catalog.Services)).To(Equal(1))
+			service := catalog.Services[0]
+			Ω(service.ID).To(Equal("service1-id"))
+			Ω(service.Metadata.LongDescription).To(Equal("long description"))
+			Ω(service.Metadata.ImageURL).To(Equal("image.png"))
 		})
 	})
 
