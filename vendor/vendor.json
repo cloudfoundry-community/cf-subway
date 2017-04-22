@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "ZNsJ4EbiuT6VpBhx3glKg9yXvuM=",
+			"path": "code.cloudfoundry.org/lager",
+			"revision": "de8e9c6c6e474e5e3668aea1a9817bdb4ceeceb0",
+			"revisionTime": "2017-02-23T02:47:24Z"
+		},
+		{
 			"checksumSHA1": "GfZvfJZHPiNFI2KTFF9HfNNAMuA=",
 			"path": "github.com/codegangsta/cli",
 			"revision": "8ba6f23b6e36d03666a14bd9421f5e3efcb59aca",
@@ -203,6 +209,12 @@
 		{
 			"checksumSHA1": "ghXj28mewHVOQRu0QrAbZqCcUoQ=",
 			"path": "github.com/pivotal-cf/brokerapi",
+			"revision": "8f25c50c2794f9401a0162e260801e877ea3d002",
+			"revisionTime": "2017-03-07T17:23:50Z"
+		},
+		{
+			"checksumSHA1": "4yHEcDRxN5sqr5UDFs3qr0B4lwA=",
+			"path": "github.com/pivotal-cf/brokerapi/auth",
 			"revision": "8f25c50c2794f9401a0162e260801e877ea3d002",
 			"revisionTime": "2017-03-07T17:23:50Z"
 		},
