@@ -125,7 +125,7 @@ ginkgo -r
 To run tests within Concourse:
 
 ```
-fly e
+fly -t snw execute -c build.yml
 ```
 
 CI

@@ -51,6 +51,12 @@
 			"revisionTime": "2016-02-19T02:10:59Z"
 		},
 		{
+			"checksumSHA1": "x6r+TYIDUIuCmFTGWMg2GLPwMYY=",
+			"path": "github.com/onsi/ginkgo/ginkgo",
+			"revision": "ac3d45ddd7ef5c4d7fc4d037b615a81f4d67981e",
+			"revisionTime": "2016-02-19T02:10:59Z"
+		},
+		{
 			"checksumSHA1": "T1cZh3UWr4Hnx6fQYp+7KDNvxG4=",
 			"path": "github.com/onsi/ginkgo/internal/codelocation",
 			"revision": "ac3d45ddd7ef5c4d7fc4d037b615a81f4d67981e",
