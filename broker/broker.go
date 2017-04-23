@@ -1,15 +1,14 @@
 package broker
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal-cf/brokerapi"
-	"gopkg.in/yaml.v2"
 )
 
 // Broker is the core struct for the Broker webapp
@@ -52,14 +51,9 @@ func (subway *Broker) LoadCatalog() error {
 	}
 	defer resp.Body.Close()
 
-	jsonData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
 	catalogResponse := brokerapi.CatalogResponse{}
-	err = yaml.Unmarshal(jsonData, &catalogResponse)
-	if err != nil {
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&catalogResponse); err != nil {
 		return err
 	}
 	subway.BackendCatalog = catalogResponse.Services
